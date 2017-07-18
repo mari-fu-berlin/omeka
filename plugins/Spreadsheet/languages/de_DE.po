@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Plugin Spreadsheet\n"
+"POT-Creation-Date: 2017-03-30 10:38+0100\n"
+"PO-Revision-Date: 2017-03-30 10:41+0100\n"
+"Last-Translator: Viktor Grandgeorg <viktor@grandgeog.de>\n"
+"Language-Team: Culture to Go\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop;__\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../SpreadsheetPlugin.php:72
+msgid "Spreadsheets"
+msgstr "Spreadsheets"
+
+#: ../controllers/IndexController.php:96
+msgid "featured"
+msgstr "hervorgehoben"
+
+#: ../controllers/IndexController.php:97
+msgid "public"
+msgstr "öffentlich"
+
+#: ../controllers/IndexController.php:98
+msgid "added"
+msgstr "hinzugefügt"
+
+#: ../controllers/IndexController.php:99
+msgid "modified"
+msgstr "geändert"
+
+#: ../controllers/IndexController.php:162
+#: ../views/admin/index/browse-list.php:7
+msgid "Name"
+msgstr "Name"
+
+#: ../controllers/IndexController.php:163
+msgid "Name des Schemas"
+msgstr "Name des Schemas"
+
+#: ../controllers/IndexController.php:173
+msgid "Objekttyp"
+msgstr "Objekttyp"
+
+#: ../controllers/IndexController.php:174
+msgid "Wählen Sie einen Objekttyp aus."
+msgstr "Wählen Sie einen Objekttyp aus."
+
+#: ../controllers/IndexController.php:185
+msgid "Dateien"
+msgstr "Dateien"
+
+#: ../controllers/IndexController.php:186
+msgid "Wählen Sie aus wie Dateien exportiert werden sollen."
+msgstr "Wählen Sie aus wie Dateien exportiert werden sollen."
+
+#: ../controllers/IndexController.php:216
+#, php-format
+msgid "Das Schema \"%s\" wurde erfolgreich hinzugefügt."
+msgstr "Das Schema \"%s\" wurde erfolgreich hinzugefügt."
+
+#: ../controllers/IndexController.php:218
+#, php-format
+msgid "Das Schema \"%s\" wurde erfolgreich bearbeitet."
+msgstr "Das Schema \"%s\" wurde erfolgreich bearbeitet."
+
+#: ../controllers/IndexController.php:232
+#, php-format
+msgid "Das Schema \"%s\" wurde erfolgreich gelöscht."
+msgstr "Das Schema \"%s\" wurde erfolgreich gelöscht."
+
+#: ../models/SpreadsheetExport.php:44
+msgid "Das Schema muss einen Namen haben."
+msgstr "Das Schema muss einen Namen haben."
+
+#: ../views/admin/index/add.php:4 ../views/admin/index/browse.php:10
+#: ../views/admin/index/browse.php:13
+msgid "Schema hinzufügen"
+msgstr "Schema hinzufügen"
+
+#: ../views/admin/index/browse-list.php:8
+#: ../views/admin/index/browse-list.php:39
+msgid "Spreadsheet erzeugen"
+msgstr "Spreadsheet erzeugen"
+
+#: ../views/admin/index/browse-list.php:9
+msgid "Last Modified"
+msgstr "Letzte Änderung"
+
+#: ../views/admin/index/browse-list.php:28
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: ../views/admin/index/browse-list.php:31
+msgid "Delete"
+msgstr "Löschen"
+
+#: ../views/admin/index/browse-list.php:41
+#, php-format
+msgid "<strong>%1$s</strong> am %2$s"
+msgstr "<strong>%1$s</strong> am %2$s"
+
+#: ../views/admin/index/browse.php:4
+msgid "Schemata für Spreadsheets | Übersicht"
+msgstr "Schemata für Spreadsheets | Übersicht"
+
+#: ../views/admin/index/browse.php:12
+msgid "Es sind keine Export-schemata definiert."
+msgstr "Es sind keine Export-schemata definiert."
