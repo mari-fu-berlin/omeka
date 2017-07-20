@@ -107,6 +107,18 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
                 )
             )
         );
+        $router->addRoute(
+            'gina-admin-mod-itemautocompleteid',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/item-autocomplete-id/:id',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'index',
+                    'action'     => 'itemautocompleteid',
+                    'id'         => null
+                )
+            )
+        );
 
     }
 

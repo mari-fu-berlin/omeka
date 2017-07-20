@@ -38,29 +38,25 @@ echo __('Here you can relate this item to another item and delete existing '
     <tr class="item-relations-entry">
         <td><?php echo __('This Item'); ?></td>
         <td><?php echo get_view()->formSelect('item_relations_property_id[]', null, array('multiple' => false), $formSelectProperties); ?></td>
-        <td><div class="ui-widget"><?php echo __('Item ID'); ?> <?php echo get_view()->formText('item_relations_item_relation_object_item_id[]', null, array('size' => 8)); ?></div></td>
+        <td>
+            <div class="ui-widget">
+                <?php echo __('Item ID'); ?>
+                <?php echo get_view()->formText('item_relations_item_relation_object_item_id[]', null, array('size' => 8)); ?>
+            <div class="selected-autocomplete"></div>
+            </div>
+        </td>
         <td><span style="color:#ccc;">n/a</span></td>
     </tr>
     </tbody>
 </table>
 <button type="button" class="item-relations-add-relation"><?php echo __('Add a Relation'); ?></button>
+
+<script src="<?php echo WEB_PLUGIN; ?>/ItemRelations/views/admin/javascripts/autocomplete/dist/jquery.autocomplete.min.js"></script>
 <script type="text/javascript">
-jQuery(document).ready(function () {
-    jQuery('.item-relations-add-relation').click(function () {
-        var oldRow = jQuery('.item-relations-entry').last();
-        var newRow = oldRow.clone();
-        oldRow.after(newRow);
-        var inputs = newRow.find('input, select');
-        inputs.val('');
+jQuery(function() {
+    jQuery('.item-relations-entry').itemrelationsAutocomplete({
+        adminBaseUrl: '<?php echo ADMIN_BASE_URL; ?>',
+        warnNoItemFound: '<?php echo __('Kein passendes Objekt gefunden!'); ?>',
     });
-
-    jQuery("#item_relations_item_relation_object_item_id").autocomplete({
-      source: "/admin/gina-admin-mod/item-autocomplete",
-      minLength: 2
-      // select: function( event, ui ) {
-      //   log( "Selected: " + ui.item.value + " aka " + ui.item.id );
-      // }
-    });
-
 });
 </script>

@@ -70,7 +70,7 @@ a:link {
 
     a:hover, a:active { color: #E57F52; }
 
-    a:visited { color: #A28E8A; }
+    a:visited { color: #C76941; }
 
 p, li {
     line-height: 1.5em;
@@ -2454,4 +2454,18 @@ button.remove_search {
 #upgrade a.button {
     float: left;
     margin: 0;
+}
+
+.selected-autocomplete {
+    margin-top: 4px;
+    background-color: #eee;
+    padding: 4px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: none;
+}
+.selected-autocomplete .warn {
+    color: #c00;
+    font-weight: bold;
 }
