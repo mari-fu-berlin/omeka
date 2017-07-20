@@ -50,7 +50,6 @@ echo __('Here you can relate this item to another item and delete existing '
     </tbody>
 </table>
 <button type="button" class="item-relations-add-relation"><?php echo __('Add a Relation'); ?></button>
-
 <script src="<?php echo WEB_PLUGIN; ?>/ItemRelations/views/admin/javascripts/autocomplete/dist/jquery.autocomplete.min.js"></script>
 <script type="text/javascript">
 jQuery(function() {
