@@ -2469,3 +2469,30 @@ button.remove_search {
     color: #c00;
     font-weight: bold;
 }
+
+/* CUSTOM STYLES
+================================================== */
+
+.gina-element-read-only {
+
+}
+.gina-element-read-only button,
+.gina-element-read-only textarea {
+    display: none !important;
+}
+.gina-element-read-only .controls,
+.gina-element-read-only .use-html {
+    display: none !important;
+}
+
+#type-metadata-form .inputs .input-block,
+.gina-element-read-only .inputs .input-block {
+    float: none;
+}
+
+.ui-autocomplete-category {
+    font-weight: bold;
+    padding: 0.1em 0.4em;
+    margin: .2em 0 .2em;
+    line-height: 1.5;
+}

@@ -29,7 +29,7 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         // 'config_form',
         // 'config',
         // 'admin_items_browse_simple_each',
-        // 'admin_items_form_item_types',
+        'admin_items_form_item_types',
         // 'admin_items_panel_fields',
         // 'admin_footer_last',
     );
@@ -61,7 +61,8 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
                 if (isset($this->itemTypes) && is_array($this->itemTypes)) {
                     foreach ($this->itemTypes as $itemType) {
                         $new[] = array(
-                            'label' => __('Objekte') . ' - ' . __($itemType->name),
+                            // 'label' => __('Objekte') . ' - ' . __($itemType->name),
+                            'label' =>  __($itemType->name),
                             'uri' => url('/items/browse?type=' . $itemType->id),
                         );
                     }
@@ -104,6 +105,17 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
                     'module'     => 'gina-admin-mod',
                     'controller' => 'index',
                     'action'     => 'itemautocomplete',
+                )
+            )
+        );
+        $router->addRoute(
+            'gina-admin-mod-itemautocompletecomplex',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/item-autocomplete-complex',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'index',
+                    'action'     => 'item-autocomplete-complex',
                 )
             )
         );
@@ -162,5 +174,154 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         return $_POST['Elements'][62][0]['text'];
     }
 
+
+    /**
+     *
+     * @param array array with item and view object
+     * @return void
+     */
+    public function hookAdminItemsFormItemTypes($args)
+    {
+        // $view = $args['view'];
+        $item = $args['item'];
+        // var_dump($item->item_type_id);
+
+        // echo '<br style="clear:all;">';
+        // var_dump($item->ItemTypeElements);
+        // echo '<br style="clear:all;">';
+
+
+        $settings = array();
+
+        switch ($item->item_type_id) {
+            case 18:
+                // Nachricht Textquelle
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle Quelle',
+                    'autoField' => 'Sigle Quelle ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '23,28',
+                );
+                break;
+            case 25:
+                // Exemplar Publikation
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle Publikation',
+                    'autoField' => 'Sigle Publikation ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '23',
+                );
+                break;
+            case 26:
+                // Annotation
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle Exemplar',
+                    'autoField' => 'Sigle Exemplar ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '25',
+                );
+                // Sigle Nachricht
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle Nachricht',
+                    'autoField' => 'Sigle Nachricht ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[1] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '18',
+                );
+                break;
+            case 29:
+                // Bilddokument
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle Quelle',
+                    'autoField' => 'Sigle Quelle ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '23,28',
+                );
+                break;
+            case 27:
+                // Shared Object
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle konstituierende Nachricht',
+                    'autoField' => 'Sigle konstituierende Nachricht ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '18,23,25,26,28,29',
+                );
+                break;
+            case 31:
+                // Nachricht mündlich
+                $fieldNames = array(
+                    'autocompleteField' => 'Sigle konstituierende Nachricht',
+                    'autoField' => 'Sigle konstituierende Nachricht ID',
+                );
+                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
+                $settings[0] = array(
+                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
+                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
+                    'itemTypeIds' => '30',
+                );
+                break;
+        }
+
+
+        echo '<script type="text/javascript" src="'
+            . WEB_PLUGIN
+            // . '/GinaAdminMod/views/admin/javascripts/autocomplete/src/autocomplete.sigle.js"></script>';
+            . '/GinaAdminMod/views/admin/javascripts/autocomplete/dist/autocomplete.sigle.min.js"></script>';
+
+        foreach ($settings as $setting) {
+            echo '<script>'
+                . "jQuery(function($) {
+                    $('#" . $setting['autocompleteFieldId'] . "').autocompleteSigle({
+                        autofield : '#" . $setting['autoFieldId'] . "',
+                        itemType: '" . $setting['itemTypeIds'] . "'
+                    });
+
+                });"
+                . '</script>';
+        }
+
+        return;
+
+    }
+
+    protected function _getSettings($ItemTypeElements, $fieldNames)
+    {
+        $fieldIds = array(
+            'autocompleteFieldId' => '',
+            'autoFieldId' => '',
+        );
+        foreach ($ItemTypeElements as $key => $ItemTypeElement) {
+            if ($ItemTypeElement->name === $fieldNames['autocompleteField']) {
+                $fieldIds['autocompleteFieldId'] = $ItemTypeElement->id;
+            }
+            if ($ItemTypeElement->name === $fieldNames['autoField']) {
+                $fieldIds['autoFieldId'] = $ItemTypeElement->id;
+            }
+        }
+        return $fieldIds;
+    }
 
 }

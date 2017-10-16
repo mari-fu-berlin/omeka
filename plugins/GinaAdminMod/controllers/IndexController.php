@@ -27,6 +27,17 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
         $query = $this->_request->getParam('term');
         $objectTypeId = $this->_request->getParam('type');
 
+        if (!isset($objectTypeId) || empty($objectTypeId)) {
+            $this->_helper->jsonApi(array(
+                'errors' => array(
+                    'status' => '442',
+                    'title'  => 'No item type attribute provided.',
+                    'detail' => 'You must provide a type param in the query.'
+                )
+            ));
+            return;
+        }
+
         $db = get_db();
         $select = $db->select()
             ->from(
@@ -48,13 +59,79 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
 
         $results = $db->fetchAll($select);
         // print_r($results);
+        // return;
         $autocomplete = array();
 
-        if (count($results) > 1) {
+        if (count($results) > 0) {
             foreach ($results as $result) {
                 $autocomplete[] = array(
                     'label' => $result['text'],
                     'value' => $result['record_id']
+                );
+            }
+        }
+        $this->_helper->jsonApi($autocomplete);
+    }
+
+    public function itemAutocompleteComplexAction()
+    {
+        $this->_helper->viewRenderer->setNoRender();
+        $query = $this->_request->getParam('term');
+        $objectTypeId = $this->_request->getParam('type');
+
+        if (!isset($objectTypeId) || empty($objectTypeId)) {
+            $this->_helper->jsonApi(array(
+                'errors' => array(
+                    'status' => '442',
+                    'title'  => 'No item type attribute provided.',
+                    'detail' => 'You must provide a type param in the query.'
+                )
+            ));
+            return;
+        }
+
+        $objectTypeId = explode(',', $objectTypeId);
+
+        $db = get_db();
+        $select = $db->select()
+            ->from(
+                array('element' => $db->ElementText),
+                array('id', 'record_id', 'element_id', 'text')
+            )
+            ->join(
+                array('item' => $db->Item),
+                'element.record_id = item.id',
+                array('item_type_id')
+            )
+            ->join(
+                array('item_type' => $db->ItemType),
+                'item.item_type_id = item_type.id',
+                array('name')
+            )
+            ->where('element.element_id = ?', 62)
+            ->where('element.text LIKE ?', '%' . $query . '%')
+            ->where('item.item_type_id IN (?)', $objectTypeId)
+        ;
+
+        // $sql = $select->__toString();
+        // echo $sql;
+        // return;
+
+        $results = $db->fetchAll($select);
+
+        // print_r($results);
+        // return;
+
+        $autocomplete = array();
+
+        if (count($results) > 0) {
+            foreach ($results as $result) {
+                $autocomplete[] = array(
+                    'label' => $result['text'],
+                    'value' => $result['text'],
+                    'item_id' => $result['record_id'],
+                    'item_type_id' => $result['item_type_id'],
+                    'category' => $result['name']
                 );
             }
         }
