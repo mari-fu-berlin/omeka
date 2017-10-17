@@ -36,6 +36,7 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected $_filters = array(
         'admin_navigation_main',
+        // 'post_admin_navigation_main',
         // 'admin_dashboard_stats',
         // 'admin_dashboard_panels',
         'admin_items_form_tabs',
@@ -57,12 +58,13 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
 
         foreach ($navArray as $nav) {
             $new[] = $nav;
-            if ($nav['label'] == __('Items') && substr($nav['uri'], -6) == '/items') {
+            if ($nav['label'] == __('Alle Objekte') && substr($nav['uri'], -6) == '/items') {
                 if (isset($this->itemTypes) && is_array($this->itemTypes)) {
                     foreach ($this->itemTypes as $itemType) {
                         $new[] = array(
                             // 'label' => __('Objekte') . ' - ' . __($itemType->name),
-                            'label' =>  __($itemType->name),
+                            'label' => '↳ ' . __($itemType->name),
+                            'class' => 'subnav',
                             'uri' => url('/items/browse?type=' . $itemType->id),
                         );
                     }
@@ -72,6 +74,13 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         return $new;
     }
 
+    // public function filterPostAdminNavigationMain($nav)
+    // {
+    //     // var_dump($nav);
+    //     $strNav = $nav->__toString();
+    //     var_dump($strNav);
+    //     return $nav;
+    // }
 
     /**
      * Add the translations.

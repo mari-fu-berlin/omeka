@@ -14,6 +14,7 @@
 
 <?php
     queue_css_file(array('iconfonts','style', 'skeleton', 'jquery-ui'));
+    queue_css_file('font-awesome.min');
     queue_css_file('media/960min', 'only screen and (min-width: 960px)');
     queue_css_file('media/1200min', 'only screen and (min-width: 1200px)');
     queue_css_file('media/768min', 'only screen and (min-width: 768px) and (max-width: 959px)');
@@ -47,7 +48,7 @@
 
         <nav>
             <?php echo common('global-nav'); ?>
-            
+
             <ul id="user-nav">
             <?php if ($user = current_user()): ?>
                 <?php

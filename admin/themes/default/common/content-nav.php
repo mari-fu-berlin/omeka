@@ -6,13 +6,13 @@
                 'uri' => url('')
             ),
             array(
-                'label' => __('Items'),
+                'label' => __('Alle Objekte'),
                 'uri' => url('items')
             ),
-            array(
-                'label' => __('Collections'),
-                'uri' => url('collections')
-            ),
+            // array(
+            //     'label' => __('Collections'),
+            //     'uri' => url('collections')
+            // ),
             array(
                 'label' => __('Item Types'),
                 'uri' => url('item-types')
@@ -23,6 +23,8 @@
             )
         );
         $nav = nav($mainNav, 'admin_navigation_main');
+        // var_dump($nav);
+        // $nav = apply_filters('post_admin_navigation_main', $nav);
         echo $nav;
     ?>
 </nav>
@@ -32,5 +34,5 @@
         <li><a href="#" tabindex="0"><?php echo $title; ?></a>
         <?php echo $nav->setUlClass('dropdown'); ?>
         </li>
-    </ul>    
+    </ul>
 </nav>
