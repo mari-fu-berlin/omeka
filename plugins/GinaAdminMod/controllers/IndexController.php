@@ -73,6 +73,77 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
         $this->_helper->jsonApi($autocomplete);
     }
 
+    public function autocompleteConfAction()
+    {
+        $this->_helper->viewRenderer->setNoRender();
+        $type = $this->_request->getParam('type_id');
+
+        if (!isset($type) || empty($type)) {
+            $this->_helper->jsonApi(array(
+                'errors' => array(
+                    'status' => '442',
+                    'title'  => 'No type_id attribute provided.',
+                    'detail' => 'You must provide a type_id in the query.'
+                )
+            ));
+            return;
+        }
+        $db = get_db();
+        $autocompleteTable = $db->getTable('ItemAutocomplete');
+        $autocompletes = $autocompleteTable->findBy(array('item_type_id' => $type));
+
+        $item = null;
+        $item_id = $this->_request->getParam('type_id', null);
+        if (isset($item_id)) {
+            $item = $db->getTable('Item')->find($item_id);
+        }
+
+
+        if (!isset($autocompletes) || empty($autocompletes)) {
+            $this->_helper->jsonApi(array(
+                'errors' => array(
+                    'status' => '442',
+                    'title'  => 'No config for item type_id found.',
+                    'detail' => 'For this item type there is no autocomplete config set.'
+                )
+            ));
+            return;
+        }
+
+        $jsonSettings = array();
+
+        foreach ($autocompletes as $autocomplete) {
+            $currentValues = $this->_getCurrentAutofieldValues($item, $autocomplete);
+            $jsonSettings[] = array(
+                'selectorAutocompleteFieldId' => 'element-' . $autocomplete->autocomplete_field_id,
+                'autofield' => '#element-' . $autocomplete->auto_field_id,
+                'itemType' => $autocomplete->autocomplete_item_type_ids,
+                'currentAutocompleteFieldValue' => $currentValues['autocompleteField'],
+                'currentAutoFieldValue' => $currentValues['autoField'],
+            );
+        }
+
+        $this->_helper->jsonApi($jsonSettings);
+
+    }
+
+    /**
+     *
+     * @return array
+     */
+    protected function _getCurrentAutofieldValues($item, $autocomplete)
+    {
+        $ret = array(
+            'autocompleteField' => '',
+            'autoField' => ''
+        );
+        if (isset($item) && isset($item->item_type_id)) {
+            $ret['autocompleteField'] = metadata($item, array('Item Type Metadata', $autocomplete['autocomplete_field_name']));
+            $ret['autoField'] = metadata($item, array('Item Type Metadata', $autocomplete['auto_field_name']));
+        }
+        return $ret;
+    }
+
     public function itemAutocompleteComplexAction()
     {
         $this->_helper->viewRenderer->setNoRender();

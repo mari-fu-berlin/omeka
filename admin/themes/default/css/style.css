@@ -2473,20 +2473,20 @@ button.remove_search {
 /* CUSTOM STYLES
 ================================================== */
 
-.gina-element-read-only {
+.gina-element-auto-field {
 
 }
-.gina-element-read-only button,
-.gina-element-read-only textarea {
+.gina-element-auto-field button,
+.gina-element-auto-field textarea {
     display: none !important;
 }
-.gina-element-read-only .controls,
-.gina-element-read-only .use-html {
+.gina-element-auto-field .controls,
+.gina-element-auto-field .use-html {
     display: none !important;
 }
 
 #type-metadata-form .inputs .input-block,
-.gina-element-read-only .inputs .input-block {
+.gina-element-auto-field .inputs .input-block {
     float: none;
 }
 

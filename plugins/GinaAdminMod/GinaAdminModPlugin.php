@@ -14,7 +14,7 @@
  */
 
 /**
- * The ImageConvert plugin.
+ * The Admin Modifications plugin.
  * @package Omeka\Plugins\ImageConvert
  */
 class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
@@ -71,6 +71,15 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
                 }
             }
         }
+
+        $new[] = array(
+            'label'     => __('Mari Verwaltung'),
+            'uri'       => url('gina-admin-mod/admin'),
+            'visible'   => true
+            // 'resource'  => 'ZlbTiles_CustomTiles',
+            // 'privilege' => 'browse'
+        );
+
         return $new;
     }
 
@@ -107,6 +116,19 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         $router = $args['router'];
 
         $router->addRoute(
+            'gina-admin-mod-autocomplete-conf',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/autocomplete-conf',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'index',
+                    'action'     => 'autocomplete-conf',
+                    // 'id'         =>  null
+                )
+            )
+        );
+
+        $router->addRoute(
             'gina-admin-mod',
             new Zend_Controller_Router_Route(
                 '/gina-admin-mod/item-autocomplete',
@@ -140,6 +162,44 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
                 )
             )
         );
+
+        // config
+        $router->addRoute(
+            'gina-admin-mod-admin-index',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/admin',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'admin',
+                    'action'     => 'index',
+                )
+            )
+        );
+
+        $router->addRoute(
+            'gina-admin-mod-admin-autocomplete-show',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/admin/autocomplete/show',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'admin',
+                    'action'     => 'autocomplete-show',
+                )
+            )
+        );
+
+        $router->addRoute(
+            'gina-admin-mod-admin-autocomplete-sanitize-items',
+            new Zend_Controller_Router_Route(
+                '/gina-admin-mod/admin/sanitize-items',
+                array(
+                    'module'     => 'gina-admin-mod',
+                    'controller' => 'admin',
+                    'action'     => 'sanitize-items',
+                )
+            )
+        );
+
 
     }
 
@@ -191,126 +251,67 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAdminItemsFormItemTypes($args)
     {
-        // $view = $args['view'];
+
         $item = $args['item'];
-        // var_dump($item->item_type_id);
+        // var_dump($item);die();
+        if (isset($item->item_type_id) && !empty($item->item_type_id)) {
+            $type = $item->item_type_id;
+        } else {
+            $type = (int) Zend_Controller_Front::getInstance()->getRequest()->getParam('type', null);
+        }
 
-        // echo '<br style="clear:all;">';
-        // var_dump($item->ItemTypeElements);
-        // echo '<br style="clear:all;">';
+        $itemTypesById = array();
+        foreach ($this->itemTypes as $itemType) {
+            $itemTypesById[$itemType->id] = $itemType->name;
+        }
 
+        $autocompleteTable = $this->_db->getTable('ItemAutocomplete');
+        $autocompletes = $autocompleteTable->findBy(array('item_type_id' => $type));
 
         $settings = array();
 
-        switch ($item->item_type_id) {
-            case 18:
-                // Nachricht Textquelle
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle Quelle',
-                    'autoField' => 'Sigle Quelle ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '23,28',
-                );
-                break;
-            case 25:
-                // Exemplar Publikation
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle Publikation',
-                    'autoField' => 'Sigle Publikation ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '23',
-                );
-                break;
-            case 26:
-                // Annotation
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle Exemplar',
-                    'autoField' => 'Sigle Exemplar ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '25',
-                );
-                // Sigle Nachricht
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle Nachricht',
-                    'autoField' => 'Sigle Nachricht ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[1] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '18',
-                );
-                break;
-            case 29:
-                // Bilddokument
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle Quelle',
-                    'autoField' => 'Sigle Quelle ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '23,28',
-                );
-                break;
-            case 27:
-                // Shared Object
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle konstituierende Nachricht',
-                    'autoField' => 'Sigle konstituierende Nachricht ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '18,23,25,26,28,29',
-                );
-                break;
-            case 31:
-                // Nachricht mündlich
-                $fieldNames = array(
-                    'autocompleteField' => 'Sigle konstituierende Nachricht',
-                    'autoField' => 'Sigle konstituierende Nachricht ID',
-                );
-                $fieldIds = $this->_getSettings($item->ItemTypeElements, $fieldNames);
-                $settings[0] = array(
-                    'autocompleteFieldId' => 'element-' . $fieldIds['autocompleteFieldId'],
-                    'autoFieldId' => 'element-' . $fieldIds['autoFieldId'],
-                    'itemTypeIds' => '30',
-                );
-                break;
+        foreach ($autocompletes as $autocomplete) {
+            $currentValues = $this->_getCurrentAutofieldValues($item, $autocomplete);
+            $currentValues['autocompleteField'] = $this->_sanitizeAutocompleteField($currentValues, $autocomplete, $item);
+            $settings[] = array(
+                'autocompleteFieldId' => 'element-' . $autocomplete->autocomplete_field_id,
+                'autoFieldId' => 'element-' . $autocomplete->auto_field_id,
+                'itemTypeIds' => $autocomplete->autocomplete_item_type_ids,
+                'currentAutocompleteFieldValue' => $currentValues['autocompleteField'],
+                'currentAutoFieldValue' => $currentValues['autoField'],
+            );
         }
-
 
         echo '<script type="text/javascript" src="'
             . WEB_PLUGIN
-            // . '/GinaAdminMod/views/admin/javascripts/autocomplete/src/autocomplete.sigle.js"></script>';
-            . '/GinaAdminMod/views/admin/javascripts/autocomplete/dist/autocomplete.sigle.min.js"></script>';
+            // . '/GinaAdminMod/views/admin/javascripts/autocomplete/src/autocomplete.sigle.js"></script>' . "\n";
+            . '/GinaAdminMod/views/admin/javascripts/autocomplete/dist/autocomplete.sigle.min.js"></script>' . "\n";
 
+        $jsonSettings = array();
         foreach ($settings as $setting) {
-            echo '<script>'
-                . "jQuery(function($) {
-                    $('#" . $setting['autocompleteFieldId'] . "').autocompleteSigle({
-                        autofield : '#" . $setting['autoFieldId'] . "',
-                        itemType: '" . $setting['itemTypeIds'] . "'
-                    });
-
-                });"
-                . '</script>';
+            $jsonSettings[] = array(
+                'selectorAutocompleteFieldId' => $setting['autocompleteFieldId'],
+                'autofield' => '#' . $setting['autoFieldId'],
+                'itemType' => $setting['itemTypeIds'],
+                'currentAutocompleteFieldValue' => $setting['currentAutocompleteFieldValue'],
+                'currentAutoFieldValue' => $setting['currentAutoFieldValue'],
+                // 'itemTypes' => $itemTypesById
+            );
         }
+
+        echo '<script>' . "\n";
+        echo 'jQuery(document).data("ginaConfAutocomplete", ' . json_encode($jsonSettings) . ');' . "\n";
+        echo 'jQuery(document).data("ginaItemTypesById", ' . json_encode($itemTypesById) . ');' . "\n";
+        echo 'jQuery(function($) {
+            for (var i = 0; i < $(document).data("ginaConfAutocomplete").length; i++) {
+                $(document).data("ginaConfAutocomplete")[i].itemTypes = $(document).data("ginaItemTypesById");
+                $("#" + $(document).data("ginaConfAutocomplete")[i].selectorAutocompleteFieldId).autocompleteSigle(
+                    $(document).data("ginaConfAutocomplete")[i]
+                );
+            }
+        });' . "\n";
+        echo '</script>' . "\n";
+
 
         return;
 
@@ -333,4 +334,40 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         return $fieldIds;
     }
 
+    /**
+     *
+     * @return array
+     */
+    protected function _getCurrentAutofieldValues($item, $autocomplete)
+    {
+        $ret = array(
+            'autocompleteField' => '',
+            'autoField' => ''
+        );
+        if (isset($item->item_type_id)) {
+            $ret['autocompleteField'] = metadata($item, array('Item Type Metadata', $autocomplete['autocomplete_field_name']));
+            $ret['autoField'] = metadata($item, array('Item Type Metadata', $autocomplete['auto_field_name']));
+        }
+        return $ret;
+    }
+
+    protected function _sanitizeAutocompleteField($currentValues, $autocomplete, $item, $sigleField = 'Sigle')
+    {
+        $ret = $currentValues['autocompleteField'];
+        if (isset($currentValues['autoField']) && !empty($currentValues['autoField'])) {
+
+            $sourceItem = $this->_db->getTable('Item')->find($currentValues['autoField']);
+            $sourceItemSigleValue = metadata($sourceItem, array('Item Type Metadata', $sigleField));
+            if (!empty($sourceItemSigleValue) && $sourceItemSigleValue !== $currentValues['autocompleteField']) {
+                // first the soft update
+                $ret = $sourceItemSigleValue;
+                // Now the db update
+                $update['Elements'][$autocomplete->autocomplete_field_id][0]['text'] = $sourceItemSigleValue;
+                $item->beforeSaveElements($update);
+                $item->save();
+
+            }
+        }
+        return $ret;
+    }
 }

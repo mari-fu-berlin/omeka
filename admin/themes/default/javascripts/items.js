@@ -11,7 +11,7 @@ Omeka.Items = {};
     Omeka.Items.enableSorting = function () {
         $('.sortable').sortable({
             items: 'li.file',
-            forcePlaceholderSize: true, 
+            forcePlaceholderSize: true,
             forceHelperSize: true,
             revert: 200,
             placeholder: "ui-sortable-highlight",
@@ -23,7 +23,7 @@ Omeka.Items = {};
             }
         });
         $( ".sortable" ).disableSelection();
-        
+
         $( ".sortable input[type=checkbox]" ).each(function () {
             $(this).css("display", "none");
         });
@@ -44,7 +44,7 @@ Omeka.Items = {};
     };
 
     /**
-     * Set up toggle for marking files for deletion. 
+     * Set up toggle for marking files for deletion.
      */
     Omeka.Items.enableFileDeletion = function (deleteLink) {
         if( !deleteLink.next().is(":checked") ) {
@@ -86,6 +86,24 @@ Omeka.Items = {};
                         // Explicit show() call fixes IE7
                         $(this).show();
                     });
+                    // Grandgeorg Websolutions BEGIN
+                    $.ajax({
+                        url:  changeItemTypeUrl.replace('/items/change-type', '/gina-admin-mod/autocomplete-conf'),
+                        type: 'POST',
+                        dataType: 'json',
+                        data: params,
+                        success: function (response) {
+                            // console.log(response);
+                            $(document).data("ginaConfAutocomplete", response);
+                            for (var i = 0; i < $(document).data("ginaConfAutocomplete").length; i++) {
+                                $(document).data("ginaConfAutocomplete")[i].itemTypes = $(document).data("ginaItemTypesById");
+                                $("#" + $(document).data("ginaConfAutocomplete")[i].selectorAutocompleteFieldId).autocompleteSigle(
+                                    $(document).data("ginaConfAutocomplete")[i]
+                                );
+                            }
+                        }
+                    });
+                    // Grandgeorg Websolutions END
                 }
             });
         });
@@ -165,7 +183,7 @@ Omeka.Items = {};
                 tagsToAdd.push(tag);
             }
         });
-        
+
         $('#tags-to-add').val(tagsToAdd.join(Omeka.Items.tagDelimiter));
         $('#tags-to-delete').val(tagsToDelete.join(Omeka.Items.tagDelimiter));
     };
