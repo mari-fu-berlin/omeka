@@ -29,7 +29,7 @@ $addNewLinkStr = '<a href="' . $addItemHrefStr . '" class="add button small gree
 echo item_search_filters();
 ?>
 
-<?php if ($total_results): ?>
+<?php if ($total_results || true): ?>
     <?php echo pagination_links(); ?>
 
     <form action="<?php echo html_escape(url('items/batch-edit')); ?>" method="post" accept-charset="utf-8">
