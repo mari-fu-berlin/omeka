@@ -46,6 +46,8 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
         'item_relations_relation_format' => 'prefix_local_part'
     );
 
+    protected static $_post = null;
+
     /**
      * Install the plugin.
      */
@@ -83,8 +85,21 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             `subject_item_id` int(10) unsigned NOT NULL,
             `property_id` int(10) unsigned NOT NULL,
             `object_item_id` int(10) unsigned NOT NULL,
+            `state` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             PRIMARY KEY (`id`)
         ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+        $db->query($sql);
+
+        $sql = "
+        CREATE TABLE IF NOT EXISTS `$db->ItemRelationsAnnotation` (
+          `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+          `relation_id` int(11) unsigned NOT NULL,
+          `state` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+          `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          `user_id` int(11) NOT NULL,
+          `annotation` longtext COLLATE utf8_unicode_ci NOT NULL,
+          PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $db->query($sql);
 
         // Install the formal vocabularies and their properties.
@@ -281,7 +296,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             'formSelectProperties' => get_table_options('ItemRelationsProperty'))
         );
     }
-    
+
     /**
      * Save the item relations after saving an item add/edit form.
      *
@@ -293,10 +308,23 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             return;
         }
 
+        // var_dump($args); die();
+
         $record = $args['record'];
         $post = $args['post'];
 
+        self::$_post = $post;
+        // var_dump($post, $record); die();
+        // $view = Zend_Registry::get('view');
+
         $db = $this->_db;
+
+        // Update Annotations
+        if (isset($post['item_relations_annotation'])) {
+            foreach ($post['item_relations_annotation'] as $itemRelationId => $annotation) {
+                self::updateAnnotation($itemRelationId, $annotation);
+            }
+        }
 
         // Save item relations.
         if (isset($post['item_relations_property_id'])) {
@@ -317,7 +345,9 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
                 // simultaneously will result in an error. Prevent this by
                 // checking if the item relation exists prior to deletion.
                 if ($itemRelation) {
-                    $itemRelation->delete();
+                    // $itemRelation->delete();
+                    $itemRelation->state = 'deleted';
+                    $itemRelation->save();
                 }
             }
         }
@@ -433,8 +463,10 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
         $item = $args['item'];
 
         $formSelectProperties = get_table_options('ItemRelationsProperty');
-        $subjectRelations = self::prepareSubjectRelations($item);
-        $objectRelations = self::prepareObjectRelations($item);
+        $subjectRelations = self::prepareSubjectRelations($item, 'all');
+        $objectRelations = self::prepareObjectRelations($item, 'all');
+        $annotations = self::prepareAnnotations($subjectRelations, $objectRelations);
+        // var_dump($annotations);
 
         ob_start();
         include 'item_relations_form.php';
@@ -446,14 +478,42 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
+     * Prepare Annotations
+     *
+     * @param obj $subjectRelations
+     * @param obj $objectRelations
+     * @return array $annotations
+     */
+    public static function prepareAnnotations($subjectRelations, $objectRelations)
+    {
+        $annotations = array('subjectRelations' => array(), 'objectRelations' => array());
+        foreach ($subjectRelations as $subjectRelation) {
+            $annotation = get_db()->getTable('ItemRelationsAnnotation')->findByCurrentByRelation($subjectRelation['item_relation_id']);
+            // if ($annotation) {
+            //     $annotation->setUser();
+            // }
+            $annotations['subjectRelations'][$subjectRelation['item_relation_id']] = $annotation;
+        }
+        foreach ($objectRelations as $objectRelation) {
+            $annotation = get_db()->getTable('ItemRelationsAnnotation')->findByCurrentByRelation($objectRelation['item_relation_id']);
+            // if ($annotation) {
+            //     $annotation->setUser();
+            // }
+            $annotations['objectRelations'][$objectRelation['item_relation_id']] = $annotation;
+        }
+        return $annotations;
+    }
+
+
+    /**
      * Prepare subject item relations for display.
      *
      * @param Item $item
      * @return array
      */
-    public static function prepareSubjectRelations(Item $item)
+    public static function prepareSubjectRelations(Item $item, $state = 'current')
     {
-        $subjects = get_db()->getTable('ItemRelationsRelation')->findBySubjectItemId($item->id);
+        $subjects = get_db()->getTable('ItemRelationsRelation')->findBySubjectItemId($item->id, $state);
         $subjectRelations = array();
 
         foreach ($subjects as $subject) {
@@ -465,7 +525,8 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
                 'object_item_id' => $subject->object_item_id,
                 'object_item_title' => self::getItemTitle($item),
                 'relation_text' => $subject->getPropertyText(),
-                'relation_description' => $subject->property_description
+                'relation_description' => $subject->property_description,
+                'state' => $subject->state
             );
         }
         return $subjectRelations;
@@ -477,9 +538,9 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
      * @param Item $item
      * @return array
      */
-    public static function prepareObjectRelations(Item $item)
+    public static function prepareObjectRelations(Item $item, $state = 'current')
     {
-        $objects = get_db()->getTable('ItemRelationsRelation')->findByObjectItemId($item->id);
+        $objects = get_db()->getTable('ItemRelationsRelation')->findByObjectItemId($item->id, $state);
         $objectRelations = array();
         foreach ($objects as $object) {
             if (!($item = get_record_by_id('item', $object->subject_item_id))) {
@@ -490,7 +551,8 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
                 'subject_item_id' => $object->subject_item_id,
                 'subject_item_title' => self::getItemTitle($item),
                 'relation_text' => $object->getPropertyText(),
-                'relation_description' => $object->property_description
+                'relation_description' => $object->property_description,
+                'state' => $object->state
             );
         }
         return $objectRelations;
@@ -521,6 +583,9 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public static function insertItemRelation($subjectItem, $propertyId, $objectItem)
     {
+
+        $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('FlashMessenger');
+
         // Only numeric property IDs are valid.
         if (!is_numeric($propertyId)) {
             return false;
@@ -538,15 +603,121 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
 
         // Don't save the relation if the subject or object items don't exist.
         if (!$subjectItem || !$objectItem) {
+            $flashMessenger->addMessage('FEHLER bei Objekt Beziehungen: Das Subjekt oder das Objekt exisitiert nicht! Beziehung konnte nicht angelegt werden.', 'error');
             return false;
+        }
+
+        // Check if we have primary link set
+        if ((int) $propertyId === 119) {
+            //findBy($params = array(), $limit = null, $page = null)
+            $primaryAssignment = get_db()->getTable('ItemRelationsRelation')->findBy(
+                array(
+                    'property_id' => $propertyId,
+                    'object_item_id' => $objectItem->id,
+                    'state' => 'current'
+                )
+            );
+            if (isset($primaryAssignment) && !empty($primaryAssignment)) {
+                $flashMessenger->addMessage(
+                    'FEHLER bei Objekt Beziehungen: Das das Objekt (ID: ' .
+                    $objectItem->id .
+                    ') hat bereits eine Primärzuweisung (Subjekt ID: ' .
+                    $primaryAssignment[0]['object_item_id'] .
+                    '). Ein Shared Objekt kann nur eine Primärzuweisung haben. ' .
+                    'Neue Beziehung konnte nicht angelegt werden.', 'error');
+            }
+            return false;
+            // var_dump($primaryAssignment); die();
         }
 
         $itemRelation = new ItemRelationsRelation;
         $itemRelation->subject_item_id = $subjectItem->id;
         $itemRelation->property_id = $propertyId;
         $itemRelation->object_item_id = $objectItem->id;
+        $itemRelation->state = 'current';
         $itemRelation->save();
 
+        self::generateAnnotationFromNewReation($itemRelation);
+
         return true;
+    }
+
+    /**
+     * Prepare and persyst new Annotation
+     *
+     * @param obj $itemRelation
+     * @return bool
+     */
+    public static function generateAnnotationFromNewReation($itemRelation)
+    {
+        if (!isset(self::$_post) || !is_object(self::$_post)) {
+            return false;
+        }
+
+        $annotation = null;
+        foreach (self::$_post['item_relations_property_id'] as $num => $id) {
+            if ((int) $id === (int) $itemRelation->property_id &&
+                (int) self::$_post['item_relations_item_relation_object_item_id'][$num] === (int) $itemRelation->object_item_id) {
+                    $annotation = self::$_post['item_relations_new_annotation'][$num];
+                    break;
+            }
+        }
+        if (!isset($annotation)) {
+            return false;
+        }
+
+        // $user = Zend_Registry::get('bootstrap')->getResource('CurrentUser');
+        // $itemRelationAnnotation = new ItemRelationsAnnotation;
+        // $itemRelationAnnotation->relation_id = $itemRelation->id;
+        // $itemRelationAnnotation->state = 'current';
+        // $itemRelationAnnotation->user_id = $user->id;
+        // $itemRelationAnnotation->annotation = $annotation;
+        // $itemRelationAnnotation->save();
+
+        $user = Zend_Registry::get('bootstrap')->getResource('CurrentUser');
+        return self::insertAnnotation($itemRelation->id, $user->id, $annotation);
+    }
+
+    /**
+     * Persis Annotation
+     * @param type $relationId
+     * @param type $userId
+     * @param type|string $annotation
+     * @param type|string $state
+     * @return type
+     */
+    public static function insertAnnotation($relationId, $userId, $annotation = '', $state = 'current')
+    {
+        $relationId = (int) $relationId;
+        $userId = (int) $userId;
+
+        $itemRelationAnnotation = new ItemRelationsAnnotation;
+        $itemRelationAnnotation->relation_id = $relationId;
+        $itemRelationAnnotation->state = $state;
+        $itemRelationAnnotation->user_id = $userId;
+        $itemRelationAnnotation->annotation = $annotation;
+        $itemRelationAnnotation->save();
+        return true;
+    }
+
+    /**
+     * Description
+     * @param srt $itemRelationId
+     * @param str $annotation
+     * @return void
+     */
+    public static function updateAnnotation($itemRelationId, $annotation)
+    {
+        $currentAnnation =  get_db()->getTable('ItemRelationsAnnotation')->findByCurrentByRelation($itemRelationId);
+        $user = Zend_Registry::get('bootstrap')->getResource('CurrentUser');
+        if ($currentAnnation) {
+            if ($annotation !== $currentAnnation->annotation) {
+                $currentAnnation->state = 'archive';
+                $currentAnnation->save();
+                self::insertAnnotation($itemRelationId, $user->id, $annotation);
+            }
+        } else {
+            self::insertAnnotation($itemRelationId, $user->id, $annotation);
+        }
     }
 }

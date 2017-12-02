@@ -1,4 +1,4 @@
-<?php    
+<?php
 $itemTitle = metadata('item', 'display_title');
 if ($itemTitle != '' && $itemTitle != __('[Untitled]')) {
     $itemTitle = ': &quot;' . $itemTitle . '&quot; ';
@@ -36,18 +36,18 @@ echo flash();
         </li>
         <?php endif; ?>
     </ul>
-    
+
     <div id="edit" class="panel">
         <?php if (is_allowed($item, 'edit')): ?>
-        <?php 
+        <?php
         echo link_to_item(__('Edit'), array('class'=>'big green button'), 'edit'); ?>
         <?php endif; ?>
         <a href="<?php echo html_escape(public_url('items/show/'.metadata('item', 'id'))); ?>" class="big blue button" target="_blank"><?php echo __('View Public Page'); ?></a>
         <?php if (is_allowed($item, 'delete')): ?>
-        <?php echo link_to_item(__('Delete'), array('class' => 'delete-confirm big red button'), 'delete-confirm'); ?>
+        <?php echo link_to_item(__('Objekt löschen'), array('class' => 'delete-confirm big red button'), 'delete-confirm'); ?>
         <?php endif; ?>
     </div>
-    
+
     <div class="public-featured panel">
         <p><span class="label"><?php echo __('Public'); ?>:</span> <?php echo ($item->public) ? __('Yes') : __('No'); ?></p>
         <p><span class="label"><?php echo __('Featured'); ?>:</span> <?php echo ($item->featured) ? __('Yes') : __('No'); ?></p>
@@ -68,7 +68,7 @@ echo flash();
         </div>
      </div>
     <?php endif; ?>
-    
+
     <div class="file-metadata panel">
         <h4><?php echo __('File Metadata'); ?></h4>
         <div id="file-list">
@@ -88,7 +88,7 @@ echo flash();
         <h4><?php echo __('Output Formats'); ?></h4>
         <div><?php echo output_format_list(); ?></div>
     </div>
-    
+
     <div class="info panel">
         <h4><?php echo __('Bibliographic Citation'); ?></h4>
         <div>

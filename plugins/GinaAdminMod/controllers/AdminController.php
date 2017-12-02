@@ -15,7 +15,9 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
 {
     public function init() {}
 
-    public function indexAction() { }
+    public function indexAction() {
+        $this->_helper->redirector('index', 'index', 'dashboard');
+    }
 
     public function autocompleteShowAction()
     {

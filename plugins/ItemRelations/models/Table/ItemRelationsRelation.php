@@ -40,28 +40,51 @@ class Table_ItemRelationsRelation extends Omeka_Db_Table
     }
 
     /**
-     * Find item relations by subject item ID.
-     * 
+     * Find item relations by relation ID.
+     *
      * @return array
      */
-    public function findBySubjectItemId($subjectItemId)
+    public function findById($id, $state = 'current')
+    {
+        $db = $this->getDb();
+        $select = $this->getSelect()
+            ->where('item_relations_relations.id = ?', (int) $id);
+        if ($state !== 'all') {
+            $select->where('item_relations_relations.state = ?', $state);
+        }
+        return $this->fetchObject($select);
+    }
+
+    /**
+     * Find item relations by subject item ID.
+     *
+     * @return array
+     */
+    public function findBySubjectItemId($subjectItemId, $state = 'current')
     {
         $db = $this->getDb();
         $select = $this->getSelect()
             ->where('item_relations_relations.subject_item_id = ?', (int) $subjectItemId);
+        if ($state !== 'all') {
+            $select->where('item_relations_relations.state = ?', $state);
+        }
         return $this->fetchObjects($select);
     }
-    
+
     /**
      * Find item relations by object item ID.
-     * 
+     *
      * @return array
      */
-    public function findByObjectItemId($objectItemId)
+    public function findByObjectItemId($objectItemId, $state = 'current')
     {
         $db = $this->getDb();
         $select = $this->getSelect()
             ->where('item_relations_relations.object_item_id = ?', (int) $objectItemId);
+            // ->where('item_relations_relations.state = ?', $state);
+        if ($state !== 'all') {
+            $select->where('item_relations_relations.state = ?', $state);
+        }
         return $this->fetchObjects($select);
     }
 }
