@@ -26,7 +26,7 @@
             var self = this;
             $('.item-relations-entry', this.element).each(function() {
                 var currentInput = $('.ui-widget input', $(this).last());
-                console.log(currentInput);
+                // console.log(currentInput);
                 self.setAutocomplete(currentInput);
             });
         },
