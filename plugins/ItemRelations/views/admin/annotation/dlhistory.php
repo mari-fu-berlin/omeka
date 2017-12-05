@@ -75,13 +75,6 @@
                     <i class="fa fa-exchange fa-lg" aria-hidden="true" title="Diese mit aktueller Annotation vergleichen"></i>
                 </a>
                 </span>
-                <span class="setcurrent">
-                <a class="setcurrent-link" href="<?php 
-                        echo ADMIN_BASE_URL; ?>/item-relations/annotation/setcurrent/id/<?php 
-                        echo $annotation->id; ?>">
-                    <i class="fa fa-check-square-o fa-lg" aria-hidden="true" title="Diese als aktuelle Version setzen"></i>
-                </a>
-                </span>
                 <?php endif; ?>
             </div>
             <div class="text">
@@ -128,42 +121,6 @@ jQuery(function($){
             event.preventDefault();
             event.stopPropagation();
             lightboxContainer.remove();
-        });
-    });
-    $('.setcurrent-link').click(function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        var url = $(this).attr('href');
-        var dialog = $('<div title="Aktuelle Version setzen" />');
-        dialog.html('<p>Sind Sie sicher, dass Sie die gewählte Version als neue aktuelle Version setzen wollen?</p>');
-        dialog.dialog({
-            // autoOpen: false
-            modal: true,
-            minWidth: 320,
-            buttons: [
-                {
-                    text: 'Änderungen übernehmen',
-                    class: 'btn button green',
-                    click: function() {
-                        $(this).dialog('close');
-                        $(this).dialog('destroy');
-                        window.location.href = url;
-                    }
-                },
-                {
-                    text: 'Abbrechen',
-                    class: 'btn red',
-                    click: function() {
-                        $(this).dialog('close');
-                        $(this).dialog('destroy');
-                    }
-                }
-            ],
-            create: function () {
-                var buttons = $('.red', $(this).parent());
-                console.log(buttons);
-                buttons.removeClass("ui-state-default");
-            }
         });
     });
 });

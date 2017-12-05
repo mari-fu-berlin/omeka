@@ -1,0 +1,11 @@
+{
+    "minimum-stability": "dev",
+    "repositories": [{
+        "type": "git",
+        "url": "https://github.com/chrisboulton/php-diff"
+    }],
+    "require": {
+        "chrisboulton/php-diff": "dev-master",
+        "soundasleep/html2text": "~0.5"
+    }
+}

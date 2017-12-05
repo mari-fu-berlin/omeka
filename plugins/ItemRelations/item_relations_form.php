@@ -36,7 +36,7 @@ $hasDeletedRelations = false;
                 <div class="title">Annotationen</div>
                 <?php if($annotations['subjectRelations'][$subjectRelation['item_relation_id']]{'added'}): ?>
                 <div class="edit">
-                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/history/rid/<?php echo $subjectRelation['item_relation_id']; ?>" target="_blank">
+                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/history/rid/<?php echo $subjectRelation['item_relation_id']; ?>">
                         <i class="fa fa-history" aria-hidden="true"></i>
                         <span class="sr-only">Annotationshistorie Bearbeiten</span>
                     </a>
@@ -84,7 +84,7 @@ $hasDeletedRelations = false;
                 <div class="title">Annotationen</div>
                 <?php if($annotations['objectRelations'][$objectRelation['item_relation_id']]{'added'}): ?>
                 <div class="edit">
-                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/history/rid/<?php echo $objectRelation['item_relation_id']; ?>" target="_blank">
+                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/history/rid/<?php echo $objectRelation['item_relation_id']; ?>">
                         <i class="fa fa-history" aria-hidden="true"></i>
                         <span class="sr-only">Annotationshistorie Bearbeiten</span>
                     </a>
@@ -155,21 +155,27 @@ $hasDeletedRelations = false;
         <tr class="inactive-item-relations-entry">
             <td><?php echo __('This Item'); ?></td>
             <td><?php echo $subjectRelation['relation_text']; ?></td>
-            <td colspan="2"><a href="<?php echo url('items/show/' . $subjectRelation['object_item_id']); ?>" target="_blank"><?php echo $subjectRelation['object_item_title']; ?></a></td>
+            <td colspan="2">
+                <a href="<?php echo url('items/show/' . $subjectRelation['object_item_id']); ?>"><?php echo $subjectRelation['object_item_title']; ?></a>
+            </td>
         </tr>
         <tr>
             <td colspan="3" class="show-current-annotation">
                 <?php echo $annotations['subjectRelations'][$subjectRelation['item_relation_id']]{'annotation'}; ?>
             </td>
             <td class="item-relations-deleted-annotations-history">
-                <span class="edit"><a href="#"><i class="fa fa-history" aria-hidden="true"></i></a></span>
+                <span class="edit">
+                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/dlhistory/rid/<?php echo $subjectRelation['item_relation_id']; ?>">
+                        <i class="fa fa-history" aria-hidden="true"></i>
+                    </a>
+                </span>
             </td>
         </tr>
         <?php endforeach; ?>
         <?php foreach ($objectRelations as $objectRelation): ?>
         <?php if ($objectRelation['state'] === 'current') { continue; } ?>
         <tr class="inactive-item-relations-entry">
-            <td><a href="<?php echo url('items/show/' . $objectRelation['subject_item_id']); ?>" target="_blank"><?php echo $objectRelation['subject_item_title']; ?></a></td>
+            <td><a href="<?php echo url('items/show/' . $objectRelation['subject_item_id']); ?>"><?php echo $objectRelation['subject_item_title']; ?></a></td>
             <td><?php echo $objectRelation['relation_text']; ?></td>
             <td colspan="2"><?php echo __('This Item'); ?></td>
         </tr>
@@ -178,7 +184,11 @@ $hasDeletedRelations = false;
                 <?php echo $annotations['objectRelations'][$objectRelation['item_relation_id']]{'annotation'}; ?>
             </td>
             <td class="item-relations-deleted-annotations-history">
-                <span class="edit"><a href="#"><i class="fa fa-history" aria-hidden="true"></i></a></span>
+                <span class="edit">
+                    <a href="<?php echo ADMIN_BASE_URL; ?>/item-relations/annotation/dlhistory/rid/<?php echo $objectRelation['item_relation_id']; ?>">
+                        <i class="fa fa-history" aria-hidden="true"></i>
+                    </a>
+                </span>
             </td>
         </tr>
         <?php endforeach; ?>

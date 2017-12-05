@@ -472,9 +472,23 @@ img { border: 0; }
         }
 
         button.red:hover, input[type=submit].red:hover, a.button.red:hover {
-            -moz-box-shadow: 0px 1px 0px 0px #b87979 inset, 0px -1px 0px 0px #5e3030 inset, 0px 0px 10px 0px #7d422a, 0px 2px 2px 0px #d4d4d4;
-            -webkit-box-shadow: 0px 1px 0px 0px #b87979 inset, 0px -1px 0px 0px #5e3030 inset, 0px 0px 10px 0px #7d422a, 0px 2px 2px 0px #d4d4d4;
-            box-shadow: 0px 1px 0px 0px #b87979 inset, 0px -1px 0px 0px #5e3030 inset, 0px 0px 10px 0px #7d422a, 0px 2px 2px 0px #d4d4d4;
+            -moz-box-shadow: 0px 1px 0px 0px #b8a6a6 inset, 0px -1px 0px 0px #5e4a4a inset, 0px 0px 10px 0px #756b67, 0px 2px 2px 0px #d4d4d4;
+            -webkit-box-shadow: 0px 1px 0px 0px #b8a6a6 inset, 0px -1px 0px 0px #5e4a4a inset, 0px 0px 10px 0px #756b67, 0px 2px 2px 0px #d4d4d4;
+            box-shadow: 0px 1px 0px 0px #b8a6a6 inset, 0px -1px 0px 0px #5e4a4a inset, 0px 0px 10px 0px #756b67, 0px 2px 2px 0px #d4d4d4;
+            color: #fff;
+            background: #ad6345;
+            background: -webkit-linear-gradient(top, #ad6345, #7d422a);
+            background: -moz-linear-gradient(top, #ad6345, #7d422a);
+            background: -o-linear-gradient(top, #ad6345, #7d422a);
+            background: linear-gradient(to bottom, #ad6345, #7d422a);
+        }
+        .red.ui-state-hover {
+            color: #fff;
+            background: #ad6345;
+            background: -webkit-linear-gradient(top, #ad6345, #7d422a);
+            background: -moz-linear-gradient(top, #ad6345, #7d422a);
+            background: -o-linear-gradient(top, #ad6345, #7d422a);
+            background: linear-gradient(to bottom, #ad6345, #7d422a);
         }
 
         button.grey:hover, input[type=submit].grey:hover, a.button.grey:hover,
@@ -2620,10 +2634,10 @@ button.remove_search {
     color: #7B9B10;
 }
 
-.item-relations-deleted td,
+/* .item-relations-deleted td,
 .item-relations-deleted th {
     width: 100%;
-}
+} */
 .item-relations-deleted {
     display: none;
     border-collapse:collapse;
@@ -2641,7 +2655,7 @@ td.show-current-annotation {
 .item-relations-deleted .item-relations-deleted-annotations-history {
     text-align: right;
     font-size: 16px;
-    width:auto;
+    width:1%;
     white-space: nowrap;
 }
 .item-relations-deleted .item-relations-deleted-annotations-history a {
@@ -2671,11 +2685,11 @@ td.show-current-annotation {
 .annotation-history .object-details .element-set:first-child {
     display: none;
 }
-
+/*
 .annotation-history .element-set {
-    /*clear: both;*/
+    clear: both;
 }
-
+*/
 .annotation-history .subject-details,
 .annotation-history .object-details {
     display: none;
@@ -2723,6 +2737,9 @@ td.show-current-annotation {
     border-bottom: 1px solid #d3d3d3;
     padding-bottom: 3px;
 }
+.annotation-history .annotation .annotation-meta .setcurrent {
+    padding-left: 8px;
+}
 .annotation-history .annotation .text {
     margin-top: 0.5em;
 }
@@ -2730,4 +2747,140 @@ td.show-current-annotation {
 .annotation-history .annotation .annotation-meta .user,
 .annotation-history .annotation .annotation-meta .time {
     padding-right: 8px;
+}
+
+.easylightbox {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    background-color: rgba(0,0,0,.8);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 99999;
+    padding: 15px 30px;
+    overflow: scroll;
+}
+
+.easylightbox .header {
+    width: 100%;
+    text-align: right;
+    color: #fff;
+    margin-bottom: 1em;
+}
+
+.easylightbox .header .close {
+    cursor: pointer;
+}
+.easylightbox .content {
+    background-color: rgba(0,0,0,1);
+}
+
+/* Diff
+================================================== */
+
+table.Differences {
+    margin-bottom: 0;
+}
+
+.Differences {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;#
+    color: #000;
+}
+
+.Differences tr {
+    background-color: #eee;
+}
+
+.Differences th {
+    border: 1px solid #9c9c9c;
+}
+
+.Differences td {
+    padding: 4px 4px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    border: 1px solid #9c9c9c;
+}
+
+.Differences thead th {
+    text-align: left;
+    border-bottom: 1px solid #000;
+    background: #aaa;
+    color: #000;
+    padding: 4px;
+}
+.Differences tbody th {
+    text-align: right;
+    background: #ccc;
+    padding: 4px 4px;
+    border-right: 1px solid #999;
+    vertical-align: top;
+    font-size: 13px;
+    font-family: Consolas, monospace;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.DifferencesSideBySide .ChangeInsert td.Left {
+    background: #dfd;
+}
+
+.DifferencesSideBySide .ChangeInsert td.Right {
+    background: #cfc;
+}
+
+.DifferencesSideBySide .ChangeDelete td.Left {
+    background: #f88;
+}
+
+.DifferencesSideBySide .ChangeDelete td.Right {
+    background: #faa;
+}
+
+.DifferencesSideBySide .ChangeReplace .Left {
+    background: #fe9;
+}
+
+.DifferencesSideBySide .ChangeReplace .Right {
+    background: #fd8;
+}
+
+.Differences ins, .Differences del {
+    text-decoration: none;
+}
+
+.DifferencesSideBySide .ChangeReplace ins, .DifferencesSideBySide .ChangeReplace del {
+    background: #fc0;
+}
+
+.Differences .Skipped {
+    background: #f7f7f7;
+}
+
+.DifferencesInline .ChangeReplace .Left,
+.DifferencesInline .ChangeDelete .Left {
+    background: #fdd;
+}
+
+.DifferencesInline .ChangeReplace .Right,
+.DifferencesInline .ChangeInsert .Right {
+    background: #dfd;
+}
+
+.DifferencesInline .ChangeReplace ins {
+    background: #9e9;
+}
+
+.DifferencesInline .ChangeReplace del {
+    background: #e99;
 }
