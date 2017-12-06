@@ -40,8 +40,9 @@
         bindItemRelations: function () {
             var self = this;
             $('.item-relations-entry', this.element).each(function () {
-                var currentInput = $('.ui-widget input', $(this).last());
-                var searchContainer = $('.search', $(this).last());
+                var last = $(this).last();
+                var currentInput = $('.ui-widget .input-id input', last);
+                var searchContainer = $('.search', last);
                 self.setAutocomplete(currentInput);
                 self.setSearch(searchContainer, currentInput);
             });
@@ -113,8 +114,10 @@
 
         syncSearch: function(currentInput, response) {
             var currentSearch = $('.search-input', currentInput.gparent(2));
-            if (currentSearch.length && currentSearch.val() !== response.sigle) {
+            if (currentSearch.length && response.hasOwnProperty('sigle') && currentSearch.val() !== response.sigle) {
                 currentSearch.val(response.sigle);
+            } else if (currentSearch.length && !response.hasOwnProperty('sigle')) {
+                currentSearch.val('');
             }
         },
 
@@ -164,6 +167,9 @@
                             self.syncSearch(currentInput, response);
                         });
                     }
+                } else {
+                    self.showAutocompleteResult(currentInput, {});
+                    self.syncSearch(currentInput, {});
                 }
             });
         },
