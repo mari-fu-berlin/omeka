@@ -113,14 +113,23 @@ $hasDeletedRelations = false;
         </td>
     </tr>
     <?php endforeach; ?>
+    <!-- new relation -->
     <tr class="item-relations-entry item-relations-new-entry">
         <td><?php echo __('This Item'); ?></td>
         <td><?php echo get_view()->formSelect('item_relations_property_id[]', null, array('multiple' => false), $formSelectProperties); ?></td>
         <td>
             <div class="ui-widget">
-                <?php echo __('Item ID'); ?>
-                <?php echo get_view()->formText('item_relations_item_relation_object_item_id[]', null, array('size' => 8)); ?>
-            <div class="selected-autocomplete"></div>
+                <div class="search clearfix">
+                    <label>Suche</label>
+                </div>
+                <div class="input-id clearfix">
+                    <label><?php echo __('Item ID'); ?></label>
+                    <?php 
+                    // echo get_view()->formText('item_relations_item_relation_object_item_id[]', null, array('size' => 8)); 
+                    ?>
+                    <?php echo get_view()->formText('item_relations_item_relation_object_item_id[]', null); ?>
+                </div>
+                <div class="selected-autocomplete"></div>
             </div>
         </td>
         <td><span style="color:#ccc;">n/a</span></td>

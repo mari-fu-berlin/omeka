@@ -1,4 +1,4 @@
-;(function($, window, document, undefined) {
+;(function ($, window, document, undefined) {
 
     'use strict';
 
@@ -6,87 +6,175 @@
         defaults = {
             adminBaseUrl: '/admin',
             warnNoItemFound: 'Kein passendes Objekt gefunden!',
+            itemType: 27
         };
 
-    function Plugin ( element, options ) {
+    function Plugin(element, options) {
         this.element = element;
-        this.settings = $.extend( {}, defaults, options );
+        this.settings = $.extend({}, defaults, options);
         this._defaults = defaults;
         this._name = pluginName;
+
+        this.searchCache = {};
+        this.checkCache = {};
+
         this.init();
     }
 
-    $.extend( Plugin.prototype, {
-        init: function() {
+    $.extend(Plugin.prototype, {
+        init: function () {
+            this.addgparentJQueryFunction();
             this.bindItemRelations();
             this.setAddRow();
         },
 
-        bindItemRelations: function() {
+        addgparentJQueryFunction: function() {
+            $.fn.gparent = function(level){
+                if(level > 1) {
+                    return $(this).parent().gparent(level - 1);
+                }
+                return $(this).parent();
+            };
+        },
+
+        bindItemRelations: function () {
             var self = this;
-            $('.item-relations-entry', this.element).each(function() {
+            $('.item-relations-entry', this.element).each(function () {
                 var currentInput = $('.ui-widget input', $(this).last());
-                // console.log(currentInput);
+                var searchContainer = $('.search', $(this).last());
                 self.setAutocomplete(currentInput);
+                self.setSearch(searchContainer, currentInput);
             });
         },
 
-        setAutocomplete: function(currentInput) {
+        setSearch: function (searchContainer, currentInput) {
+            var old = $('.search-input', searchContainer);
+            if(old.length) {
+                old.remove();
+            }
+            var input = $('<input type="text">');
+            input.addClass('search-input');
             var settings = this.settings;
-            currentInput.autocomplete({
-                source: '/admin/gina-admin-mod/item-autocomplete?type=27',
-                minLength: 1,
-                select: function(event, ui) {
-                    $('.selected-autocomplete', currentInput.parent())
-                        .html('<a href="' +
-                            settings.adminBaseUrl +
-                            '/items/show/' +
-                            ui.item.value +
-                            '" target="_blank">' +
-                            ui.item.label +
-                            '</a>')
-                        .show('fade', {}, 500);
-                    },
-            });
+            var searchCache = this.searchCache;
 
-            $(currentInput).on('autocompleteresponse', function( event, ui ) {
-                if (ui.content.length === 0) {
-                    $.getJSON(settings.adminBaseUrl +
-                        '/gina-admin-mod/item-autocomplete-id/' +
-                        currentInput.val(), function(data) {
-                        // console.log(data);
-                        if (data.hasOwnProperty('status')) {
-                            if (data.status === 200) {
-                                $('.selected-autocomplete', currentInput.parent())
-                                    .html('<a href="' +
-                                        settings.adminBaseUrl +
-                                        '/items/show/' +
-                                        data.id +
-                                        '" target="_blank">' +
-                                        data.sigle +
-                                        '</a>')
-                                    .show('fade', {}, 500);
-                            } else {
-                                $('.selected-autocomplete', currentInput.parent())
-                                    .html('<div class="warn">' +
-                                        settings.warnNoItemFound +
-                                        '</div>')
-                                    .show('fade', {}, 500);
-                            }
-                        } else {
-                            $('.selected-autocomplete', currentInput.parent()).html('').hide('fade', {}, 500);
+            $.widget('custom.catcomplete', $.ui.autocomplete, {
+                _create: function () {
+                    this._super();
+                    this.widget().menu('option', 'items', '> :not(.ui-autocomplete-category)');
+                },
+                _renderMenu: function (ul, items) {
+                    var self = this,
+                        currentCategory = '';
+                    $.each(items, function (index, item) {
+                        var li;
+                        if (item.category !== currentCategory) {
+                            ul.append('<li class="ui-autocomplete-category">' + item.category + '</li>');
+                            currentCategory = item.category;
+                        }
+                        li = self._renderItemData(ul, item);
+                        if (item.category) {
+                            li.attr('aria-label', item.category + ' : ' + item.label);
                         }
                     });
                 }
-            } );
+            });
+
+            input.catcomplete({
+                source: function (request, response) {
+                    var term = request.term;
+                    if (term in searchCache) {
+                        response(searchCache[term]);
+                        return;
+                    }
+                    $.getJSON('/admin/gina-admin-mod/item-autocomplete-complex?type=' + 
+                        settings.itemType, 
+                        request, 
+                        function (data) {
+                            searchCache[term] = data;
+                            response(data);
+                    });
+                },
+                minLength: 1,
+                select: function (event, ui) {
+                    currentInput.val(ui.item.item_id).trigger('input');
+                },
+                // response: function (event, ui) {
+                // },
+                // change: function (event, ui) {
+                // },
+                focus: function () {
+                    return false;
+                }
+            });
+
+            searchContainer.append(input);
+
         },
 
-        setAddRow: function() {
-            var that = this;
+        syncSearch: function(currentInput, response) {
+            var currentSearch = $('.search-input', currentInput.gparent(2));
+            if (currentSearch.length && currentSearch.val() !== response.sigle) {
+                currentSearch.val(response.sigle);
+            }
+        },
+
+        showAutocompleteResult: function (currentInput, response) {
+            var settings = this.settings;
+            var autocomplete = $('.selected-autocomplete', currentInput.gparent(2));
+            if (response.hasOwnProperty('status')) {
+                if (response.status === 200) {
+                    autocomplete
+                        .html('<a href="' +
+                            settings.adminBaseUrl +
+                            '/items/show/' +
+                            response.id +
+                            '" target="_blank">' +
+                            response.sigle +
+                            '</a>')
+                        .show('fade', {}, 500);
+                } else {
+                    autocomplete
+                        .html('<div class="warn">' +
+                            settings.warnNoItemFound +
+                            '</div>')
+                        .show('fade', {}, 500);
+                }
+            } else {
+                autocomplete.html('').hide('fade', {}, 500);
+            }
+        },
+
+        setAutocomplete: function (currentInput) {
+            var settings = this.settings;
+            var checkCache = this.checkCache;
+            var self = this;
+            currentInput.bind('input', function() {
+                var term = $(this).val();
+                if (term.length > 0) {
+                    if (term in checkCache) {
+                        self.showAutocompleteResult(currentInput, checkCache[term]);
+                        self.syncSearch(currentInput, checkCache[term]);
+                    } else {
+                        $.getJSON(settings.adminBaseUrl +
+                        '/gina-admin-mod/item-autocomplete-id/' +
+                        term,
+                        function (response) {
+                            checkCache[term] = response;
+                            self.showAutocompleteResult(currentInput, response);
+                            self.syncSearch(currentInput, response);
+                        });
+                    }
+                }
+            });
+        },
+
+        setAddRow: function () {
+            var self = this;
             $('#item-relations-add-relation').click(function () {
                 var lastRow = $('.item-relations-new-entry').last();
                 var lastAnnotation = $('.item-relations-entry-annotation').last();
                 var newRow = lastRow.clone();
+                var searchContainer = $('.search', newRow);
                 var annotationNum = $('textarea', lastAnnotation).attr('name').match(/\[(\d+)\]/);
                 var newAnnotationName = 'item_relations_new_annotation[' + (parseInt(annotationNum[1]) + 1) + ']';
 
@@ -94,9 +182,6 @@
                     '<label for="' + newAnnotationName + '" style="margin-bottom: 8px; display: block;">Annotationen</label>' +
                     '<textarea name="' + newAnnotationName + '" id="' + newAnnotationName + '" style="width:100%;"></textarea>' +
                     '</td></tr>');
-
-                // console.log(lastRow);
-                // console.log(newAnnotation);
 
                 newRow.insertAfter(lastAnnotation);
                 newAnnotation.insertAfter(newRow);
@@ -106,17 +191,18 @@
                 input.val('');
                 select.val('');
                 $('.selected-autocomplete', newRow).html('').hide();
-                that.setAutocomplete(input);
+                input.unbind('input');
+                self.setAutocomplete(input);
+                self.setSearch(searchContainer, $('.ui-widget input', newRow));
                 tinyMCE.execCommand('mceAddControl', true, newAnnotationName);
             });
         }
     });
 
-    $.fn[ pluginName ] = function(options) {
-        return this.each(function() {
-            if ( !$.data(this, 'plugin_' + pluginName)) {
-                $.data( this, 'plugin_' +
-                    pluginName, new Plugin(this, options));
+    $.fn[pluginName] = function (options) {
+        return this.each(function () {
+            if (!$.data(this, 'plugin_' + pluginName)) {
+                $.data(this, 'plugin_' + pluginName, new Plugin(this, options));
             }
         });
     };

@@ -1,0 +1,27 @@
+.item-relations-new-entry .search,
+.item-relations-new-entry .input-id {
+    clear: both;
+    margin-bottom: 10px;
+}
+.item-relations-new-entry .search label,
+.item-relations-new-entry .input-id label {
+    float: left;    
+}
+.item-relations-new-entry .search input,
+.item-relations-new-entry .input-id input {
+    float: right;
+    margin: 0;
+    padding: 2px 4px;
+    line-height: 1;
+    height: auto;
+}
+.item-relations-new-entry .selected-autocomplete {
+    margin-top: 0;
+    background-color: #eee;
+    padding: 4px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: none;
+    clear: both;
+}

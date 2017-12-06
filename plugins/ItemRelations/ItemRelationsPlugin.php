@@ -22,6 +22,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
         'define_acl',
         'initialize',
         'after_save_item',
+        'admin_head',
         'admin_items_show_sidebar',
         'admin_items_search',
         'admin_items_batch_edit_form',
@@ -385,6 +386,11 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
                     $params['item_relations_property_id']
                 );
         }
+    }
+
+    public function hookAdminHead()
+    {
+        queue_css_file('relations');
     }
 
     /**
