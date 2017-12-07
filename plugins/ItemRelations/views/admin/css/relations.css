@@ -25,3 +25,6 @@
     display: none;
     clear: both;
 }
+.container-details-show button {
+    margin-top: 0.5em;
+}

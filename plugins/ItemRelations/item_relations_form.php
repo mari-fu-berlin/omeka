@@ -93,7 +93,7 @@ $hasDeletedRelations = false;
                 <?php if($annotations['objectRelations'][$objectRelation['item_relation_id']]{'user_name'}): ?>
                 <div class="user">
                     <i class="fa fa-user" aria-hidden="true" title="Benutzer"></i>
-                    <a href="mailto:<?php echo $annotations['subjectRelations'][$subjectRelation['item_relation_id']]{'user_email'}; ?>">
+                    <a href="mailto:<?php echo $annotations['objectRelations'][$objectRelation['item_relation_id']]{'user_email'}; ?>">
                         <?php echo $annotations['objectRelations'][$objectRelation['item_relation_id']]{'user_name'}; ?>
                     </a>
                 </div>
