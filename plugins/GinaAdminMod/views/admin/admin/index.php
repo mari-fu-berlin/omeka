@@ -36,7 +36,7 @@ echo flash();
             </td>
         </tr>
         <tr>
-            <td>Objekt-Beziehungen: Primärzuweisungen an Hand von Sigle konstituierende Nachricht ID setzen.</td>
+            <td>Objekt-Beziehungen: Primärzuweisungen anhand von &quot;Sigle konstituierende Nachricht ID&quot; setzen.</td>
             <td style="text-align:center; vertical-align:middle;">
                 <a class="add-custom-tile button small blue" style="margin:0;" href="<?php echo html_escape(url('/gina-admin-mod/admin/add-primary-item-relations')); ?>">
                 <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
