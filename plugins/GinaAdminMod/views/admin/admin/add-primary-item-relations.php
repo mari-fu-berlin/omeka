@@ -9,7 +9,7 @@ echo flash();
 ?>
 <?php if (empty($log)): ?>
     <h4><span style="color:#060;">Keine Änderungen vorgenommen.</span><br>
-    Alle Objekte mit &quot;Sigle konstituierende Nachricht ID&quot; haben bereits eine Primärbeziehung.</h4>
+    Alle Objekte mit &quot;Sigle konstituierende Nachricht ID&quot; haben bereits eine Primärzuweisung.</h4>
 <?php else: ?>
     <h4 style="color:#060;">Shared Objects mit neuer Primärbeziehung:</h4>
     <ul>
