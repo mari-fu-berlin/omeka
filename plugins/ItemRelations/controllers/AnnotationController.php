@@ -12,7 +12,8 @@
 class ItemRelations_AnnotationController extends Omeka_Controller_AbstractActionController
 {
 
-    public function init() {
+    public function init() 
+    {
         $this->_helper->db->setDefaultModelName('ItemRelationsAnnotation');
     }
 
@@ -137,9 +138,7 @@ class ItemRelations_AnnotationController extends Omeka_Controller_AbstractAction
         
         $currentAnnotation = explode("\n", Html2Text\Html2Text::convert($current->annotation));
         $compareAnnotation = explode("\n", Html2Text\Html2Text::convert($compare->annotation));
-        $diffOptions = array(
-            'context' => 9999999999
-        );
+        $diffOptions = array('context' => 9999999999);
         $diff = new Diff($compareAnnotation, $currentAnnotation, $diffOptions);
         $rendererOptions = array(
             'currentTitle' => 'Version vom ' . date("d.m.Y H:i:s", strtotime($compare->added)),
@@ -170,7 +169,7 @@ class ItemRelations_AnnotationController extends Omeka_Controller_AbstractAction
             $this->_helper->redirector('index', 'index', 'dashboard');
         }
 
-        $old =  get_db()->getTable('ItemRelationsAnnotation')->findByCurrentByRelation($new->relation_id);
+        $old = get_db()->getTable('ItemRelationsAnnotation')->findByCurrentByRelation($new->relation_id);
         if ($old) {
             $old->state = 'archive';
             $old->save();
