@@ -628,7 +628,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
                     'FEHLER bei Objekt Beziehungen: Das das Objekt (ID: ' .
                     $objectItem->id .
                     ') hat bereits eine Primärzuweisung (Subjekt ID: ' .
-                    $primaryAssignment[0]['object_item_id'] .
+                    $primaryAssignment[0]['subject_item_id'] .
                     '). Ein Shared Objekt kann nur eine Primärzuweisung haben. ' .
                     'Neue Beziehung konnte nicht angelegt werden.', 'error');
             }
