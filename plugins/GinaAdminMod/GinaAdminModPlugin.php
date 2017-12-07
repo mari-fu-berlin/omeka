@@ -164,41 +164,41 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         );
 
         // config
-        $router->addRoute(
-            'gina-admin-mod-admin-index',
-            new Zend_Controller_Router_Route(
-                '/gina-admin-mod/admin',
-                array(
-                    'module'     => 'gina-admin-mod',
-                    'controller' => 'admin',
-                    'action'     => 'index',
-                )
-            )
-        );
+        // $router->addRoute(
+        //     'gina-admin-mod-admin-index',
+        //     new Zend_Controller_Router_Route(
+        //         '/gina-admin-mod/admin',
+        //         array(
+        //             'module'     => 'gina-admin-mod',
+        //             'controller' => 'admin',
+        //             'action'     => 'index',
+        //         )
+        //     )
+        // );
 
-        $router->addRoute(
-            'gina-admin-mod-admin-autocomplete-show',
-            new Zend_Controller_Router_Route(
-                '/gina-admin-mod/admin/autocomplete/show',
-                array(
-                    'module'     => 'gina-admin-mod',
-                    'controller' => 'admin',
-                    'action'     => 'autocomplete-show',
-                )
-            )
-        );
+        // $router->addRoute(
+        //     'gina-admin-mod-admin-autocomplete-show',
+        //     new Zend_Controller_Router_Route(
+        //         '/gina-admin-mod/admin/autocomplete/show',
+        //         array(
+        //             'module'     => 'gina-admin-mod',
+        //             'controller' => 'admin',
+        //             'action'     => 'autocomplete-show',
+        //         )
+        //     )
+        // );
 
-        $router->addRoute(
-            'gina-admin-mod-admin-autocomplete-sanitize-items',
-            new Zend_Controller_Router_Route(
-                '/gina-admin-mod/admin/sanitize-items',
-                array(
-                    'module'     => 'gina-admin-mod',
-                    'controller' => 'admin',
-                    'action'     => 'sanitize-items',
-                )
-            )
-        );
+        // $router->addRoute(
+        //     'gina-admin-mod-admin-autocomplete-sanitize-items',
+        //     new Zend_Controller_Router_Route(
+        //         '/gina-admin-mod/admin/sanitize-items',
+        //         array(
+        //             'module'     => 'gina-admin-mod',
+        //             'controller' => 'admin',
+        //             'action'     => 'sanitize-items',
+        //         )
+        //     )
+        // );
 
 
     }

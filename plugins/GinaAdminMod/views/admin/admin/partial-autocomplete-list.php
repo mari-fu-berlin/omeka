@@ -22,7 +22,7 @@
     <?php foreach (loop('autocompletes') as $autocomplete): ?>
         <tr>
             <td>
-                <?php echo $autocomplete->item_type_id; ?>
+                <span title="<?php echo $autocomplete->item_type_name; ?>"><?php echo $autocomplete->item_type_id; ?></span>
             </td>
             <td>
                 <?php echo $autocomplete->autocomplete_field_name; ?>

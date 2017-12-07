@@ -1,12 +1,48 @@
 <?php
 $head = array(
-    'bodyclass' => 'gina-mod-mari-admin primary',
-    'title' => html_escape(__('Mari Verwaltung | Übersicht')),
+    'bodyclass'     => 'gina-mod-mari-admin primary',
+    'title'         => html_escape(__('Mari Verwaltung | Übersicht')),
     'content_class' => 'horizontal-nav'
 );
 echo head($head);
 echo flash();
 ?>
-<a class="add-custom-tile button small green" href="<?php echo html_escape(url('/gina-admin-mod/admin/autocomplete/show')); ?>"><?php echo __('Konfiguration der Autovervollständigen-Felder'); ?></a><br>
-<a class="add-custom-tile button small green" href="<?php echo html_escape(url('/gina-admin-mod/admin/sanitize-items')); ?>"><?php echo __('Autovervollständigen-Felder aller Objekte bereinigen'); ?></a>
+<table>
+    <thead>
+        <tr>
+            <th>
+                <?php echo __('Task'); ?>
+            </th>
+            <th>
+                Aktion
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Konfiguration der Autovervollständigen-Felder</td>
+            <td>
+                <a class="add-custom-tile button small green" href="<?php echo html_escape(url('/gina-admin-mod/admin/autocomplete-show')); ?>">
+                <i class="fa fa-eye" aria-hidden="true"></i> <?php echo __('Anzeigen'); ?>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>Autovervollständigen-Felder aller Objekte bereinigen</td>
+            <td>
+                <a class="add-custom-tile button small blue" href="<?php echo html_escape(url('/gina-admin-mod/admin/sanitize-items')); ?>">
+                <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>Objekt-Beziehungen: Primärzuweisungen an Hand von Sigle konstituierende Nachricht ID setzen.</td>
+            <td>
+                <a class="add-custom-tile button small blue" href="<?php echo html_escape(url('/gina-admin-mod/admin/add-primary-item-relations')); ?>">
+                <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
 <?php echo foot(); ?>

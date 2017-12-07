@@ -16,13 +16,16 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
     public function init() {}
 
     public function indexAction() { }
-
+    
+    /**
+     * @url: /admin/gina-admin-mod/admin/autocomplete-show
+     */
     public function autocompleteShowAction()
     {
         $params = $this->getAllParams();
         $db = get_db();
         $autocompleteTable = $db->getTable('ItemAutocomplete');
-        $autocompletes = $autocompleteTable->findBy($params);
+        $autocompletes = $autocompleteTable->findAll();
         $this->view->autocompletes = $autocompletes;
     }
 
@@ -149,7 +152,6 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         $this->view->msg = $msg;
     }
 
-
     protected function _getSigleElementText($db, $elementTextTable, $autoField, $elementSigleId)
     {
         $alias = $elementTextTable->getTableAlias();
@@ -162,5 +164,208 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         return $db->fetchOne($select);
     }
 
+    /**
+     * @url: /admin/gina-admin-mod/admin/add-primary-item-relations
+     */
+    public function addPrimaryItemRelationsAction()
+    {
+        $db = get_db();
+
+        // Get the item relations property id for MARI -> Primärzuweisung
+        $select = new Omeka_Db_Select($db->getAdapter());
+        $select
+        ->from(
+            array('item_relations_property' => $db->ItemRelationsProperty), 
+            array(
+                'label' => 'item_relations_property.label',
+                'property_id' => 'item_relations_property.id'
+            )
+        )
+        ->joinLeft(
+            array('item_relations_vocabulary' => $db->ItemRelationsVocabulary),
+            'item_relations_property.vocabulary_id = item_relations_vocabulary.id',
+            array(
+                'name' => 'item_relations_vocabulary.name',
+            )
+        )
+        ->where('item_relations_property.label = ?', 'Primärzuweisung')
+        ->where('item_relations_vocabulary.name = ?', 'MARI');
+        // $sql = $select->__toString();
+        // var_dump($sql);
+        $relationMariPrimAssignment = $db->fetchRow($select);
+        // var_dump($relationMariPrimAssignment);
+        if (!isset($relationMariPrimAssignment) || empty($relationMariPrimAssignment)) {
+            $this->_helper->flashMessenger('Vorgang abgebrochen. Keine Objektbezihung vom Typ "MARI" mit Beziehung "Primärzuweisung" vorhanden.', 'error');
+            $this->_helper->redirector('index', 'admin', 'gina-admin-mod');
+        }
+
+        // Get all Shared Object items
+        $select = new Omeka_Db_Select($db->getAdapter());
+        $select
+            ->from(
+                array('item' => $db->Item),
+                array(
+                    'id' => 'id'
+                )
+            )
+            ->joinLeft(
+                array('item_type' => $db->ItemType),
+                'item.item_type_id = item_type.id',
+                array()
+            )
+            ->where('item_type.name = ?', 'Shared Object');
+
+        // $sql = $select->__toString();
+        // var_dump($sql);
+        $allSharedObjectsResults = $db->fetchAll($select);
+        $allSharedObjects = array();
+        foreach ($allSharedObjectsResults as $allSharedObjectsResult) {
+            array_push($allSharedObjects, $allSharedObjectsResult['id']);
+        }
+        // var_dump($allSharedObjects);
+
+        // Get Shared Objects with metadata 'Sigle konstituierende Nachricht ID' set
+        $select = new Omeka_Db_Select($db->getAdapter());
+        $select
+            ->from(
+                array('item' => $db->Items), 
+                array('object_id' => 'id')
+            )
+            ->joinLeft(
+                array('element_text' => $db->ElementText),
+                'item.id = element_text.record_id',
+                array(
+                    'subject_id' => 'element_text.text',
+                )
+            )
+            ->joinLeft(
+                array('element' => $db->Element),
+                'element_text.element_id = element.id',
+                array(
+                    // 'e_name' => 'element.name',
+                )
+            )
+            ->joinLeft(
+                array('item_types_element' => $db->ItemTypesElement),
+                'element.id = item_types_element.element_id',
+                array()
+            )
+            ->joinLeft(
+                array('item_type' => $db->ItemType),
+                'item_types_element.item_type_id = item_type.id',
+                array(
+                    // 'item_type_name' => 'item_type.name',
+                )
+            )
+            ->where('element_text.record_type = ?', 'Item')
+            ->where('element.name = ?', 'Sigle konstituierende Nachricht ID')
+            ->where('item_type.name = ?', 'Shared Object');
+        $sql = $select->__toString();
+        // var_dump($sql);
+        $sharedObjects = $db->fetchAll($select);
+        // var_dump($sharedObjects);
+        if (!isset($sharedObjects) || empty($sharedObjects)) {
+            $this->_helper->flashMessenger('Vorgang abgebrochen. Keine Objekte vom Typ "Shared Object" mit Metafeld "Sigle konstituierende Nachricht ID" vorhanden.', 'error');
+            $this->_helper->redirector('index', 'admin', 'gina-admin-mod');
+        }
+
+        // iterate Shared Objects and see if there are MARI -> Primärzuweisung item relations set for them
+        $relations = array();
+        $log = array();
+        foreach ($sharedObjects as $sharedObject) {
+            $select = new Omeka_Db_Select($db->getAdapter());
+            $select
+                ->from(
+                    array('item_relations' => $db->ItemRelationsRelation), 
+                    '*'
+                )
+                ->where('subject_item_id = ?', (int) $sharedObject['subject_id'])
+                ->where('property_id = ?', $relationMariPrimAssignment['property_id'])
+                ->where('object_item_id = ?', $sharedObject['object_id']);
+            // $sql = $select->__toString();
+            // var_dump($sql);
+            $relations[$sharedObject['object_id']] = $db->fetchAll($select);
+
+            // remove from $allSharedObjects
+            $allSharedObjectsKey = array_search($sharedObject['object_id'], $allSharedObjects);
+            if ($allSharedObjectsKey !== false) {
+                unset($allSharedObjects[$allSharedObjectsKey]);
+            }
+            
+            if (empty($relations[$sharedObject['object_id']])) {
+                // inssert new relation
+                $log[$sharedObject['object_id']] = $this->_insertNewRelation($sharedObject['subject_id'], $relationMariPrimAssignment['property_id'],  $sharedObject['object_id']);
+            } else if (count($relations[$sharedObject['object_id']]) > 1) {
+                // check for state
+                $hasCurrent = false;
+                foreach ($relations[$sharedObject['object_id']] as $relation) {
+                    if ($relation['state'] === 'current') {
+                        $hasCurrent = true;
+                        break;
+                    }
+                }
+                if ($hasCurrent === false) {
+                    // insert new relation
+                    $log[$sharedObject['object_id']] = $this->_insertNewRelation($sharedObject['subject_id'], $relationMariPrimAssignment['property_id'],  $sharedObject['object_id']);
+                }
+            } else {
+                // check for state === current
+                if ($relations[$sharedObject['object_id']][0]['state'] !== 'current') {
+                    // inssert new relation
+                    $log[$sharedObject['object_id']] = $this->_insertNewRelation($sharedObject['subject_id'], $relationMariPrimAssignment['property_id'],  $sharedObject['object_id']);
+                }
+            }
+
+
+        }
+        $this->_insertNewAnnotation(1);
+        $this->view->log = $log;
+        $this->view->noSigleIdObjects = $allSharedObjects;
+        // var_dump($relations);
+
+    }
+
+    protected function _insertNewRelation($subject_id, $property_id, $object_id) {
+        $relation = new ItemRelationsRelation();
+        $relation->subject_item_id = (int) $subject_id;
+        $relation->property_id = (int) $property_id;
+        $relation->object_item_id = (int) $object_id;
+        $relation->state = 'current';
+        $res = $relation->save();
+        $this->_insertNewAnnotation($relation->id);
+        return $res;
+    }
+
+    protected function _insertNewAnnotation($relation_id, $user_id = '', $annotation = '') {
+
+        if (empty($user_id)) {
+            $user = $this->_getSystemuser();
+            if (isset($user->id)) {
+                $user_id = $user->id;
+            }
+        }
+
+        if (empty($annotation)) {
+            $annotation = 'Beim Ingest vorgenommene Primärzuweisung';
+        }
+
+        $itemRelationAnnotation = new ItemRelationsAnnotation;
+        $itemRelationAnnotation->relation_id = $relation_id;
+        $itemRelationAnnotation->state = 'current';
+        $itemRelationAnnotation->user_id = $user_id;
+        $itemRelationAnnotation->annotation = $annotation;
+        $saved = $itemRelationAnnotation->save();
+    }
+
+    protected function _getSystemuser()
+    {
+        $db = get_db();
+        $result = $db->getTable('User')->findBy(array('username' => 'marisystem'));
+        if (count($result) === 1) {
+            return $result[0];
+        } else {
+            return $result;
+        }
+    }
 
 }
