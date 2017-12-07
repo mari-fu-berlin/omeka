@@ -21,24 +21,24 @@ echo flash();
     <tbody>
         <tr>
             <td>Konfiguration der Autovervollständigen-Felder</td>
-            <td>
-                <a class="add-custom-tile button small green" href="<?php echo html_escape(url('/gina-admin-mod/admin/autocomplete-show')); ?>">
+            <td style="text-align:center; vertical-align:middle;">
+                <a class="add-custom-tile button small green" style="margin:0;" href="<?php echo html_escape(url('/gina-admin-mod/admin/autocomplete-show')); ?>">
                 <i class="fa fa-eye" aria-hidden="true"></i> <?php echo __('Anzeigen'); ?>
                 </a>
             </td>
         </tr>
         <tr>
             <td>Autovervollständigen-Felder aller Objekte bereinigen</td>
-            <td>
-                <a class="add-custom-tile button small blue" href="<?php echo html_escape(url('/gina-admin-mod/admin/sanitize-items')); ?>">
+            <td style="text-align:center; vertical-align:middle;">
+                <a class="add-custom-tile button small blue" style="margin:0;" href="<?php echo html_escape(url('/gina-admin-mod/admin/sanitize-items')); ?>">
                 <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
                 </a>
             </td>
         </tr>
         <tr>
             <td>Objekt-Beziehungen: Primärzuweisungen an Hand von Sigle konstituierende Nachricht ID setzen.</td>
-            <td>
-                <a class="add-custom-tile button small blue" href="<?php echo html_escape(url('/gina-admin-mod/admin/add-primary-item-relations')); ?>">
+            <td style="text-align:center; vertical-align:middle;">
+                <a class="add-custom-tile button small blue" style="margin:0;" href="<?php echo html_escape(url('/gina-admin-mod/admin/add-primary-item-relations')); ?>">
                 <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
                 </a>
             </td>
