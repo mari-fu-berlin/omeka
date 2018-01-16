@@ -225,6 +225,30 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         // var_dump($allSharedObjects);
 
         // Get Shared Objects with metadata 'Sigle konstituierende Nachricht ID' set
+        
+        /**
+         * SELECT `item`.`id` AS `object_id`, 
+         * `element_text`.`text` AS `subject_id` 
+         * FROM `omeka_mari_items` AS `item` 
+         * 
+         * LEFT JOIN `omeka_mari_element_texts` AS `element_text` 
+         * ON item.id = element_text.record_id 
+         * 
+         * LEFT JOIN `omeka_mari_elements` AS `element` 
+         * ON element_text.element_id = element.id 
+         * 
+         * LEFT JOIN `omeka_mari_item_types_elements` AS `item_types_element` 
+         * ON element.id = item_types_element.element_id 
+         * 
+         * LEFT JOIN `omeka_mari_item_types` AS `item_type` 
+         * ON item_types_element.item_type_id = item_type.id 
+         * 
+         * WHERE (element_text.record_type = 'Item') 
+         * AND (element.name = 'Sigle konstituierende Nachricht ID') 
+         * AND (item_type.name = 'Shared Object')
+         */
+
+
         $select = new Omeka_Db_Select($db->getAdapter());
         $select
             ->from(
@@ -260,12 +284,14 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
             ->where('element_text.record_type = ?', 'Item')
             ->where('element.name = ?', 'Sigle konstituierende Nachricht ID')
             ->where('item_type.name = ?', 'Shared Object');
-        $sql = $select->__toString();
+            
+        // $sql = $select->__toString();
         // var_dump($sql);
         $sharedObjects = $db->fetchAll($select);
         // var_dump($sharedObjects);
+
         if (!isset($sharedObjects) || empty($sharedObjects)) {
-            $this->_helper->flashMessenger('Vorgang abgebrochen. Keine Objekte vom Typ "Shared Object" mit Metafeld "Sigle konstituierende Nachricht ID" vorhanden.', 'error');
+            $this->_helper->flashMessenger('Vorgang abgebrochen. Keine Objekte vom Typ "Shared Object" mit Wert aus Metafeld "Sigle konstituierende Nachricht ID" vorhanden.', 'error');
             $this->_helper->redirector('index', 'admin', 'gina-admin-mod');
         }
 

@@ -28,7 +28,11 @@ echo flash();
             </td>
         </tr>
         <tr>
-            <td>Autovervollständigen-Felder aller Objekte bereinigen</td>
+            <td>
+                Autovervollständigen-Felder aller Objekte untersuchen.<br>
+                Eindeutig identifizierbare Siglen automatisch als ID setzten,<br>
+                Fehler, wenn möglich bereinigen und Protokoll ausgeben.
+            </td>
             <td style="text-align:center; vertical-align:middle;">
                 <a class="add-custom-tile button small blue" style="margin:0;" href="<?php echo html_escape(url('/gina-admin-mod/admin/sanitize-items')); ?>">
                 <i class="fa fa-cog" aria-hidden="true"></i> <?php echo __('Ausführen'); ?>
