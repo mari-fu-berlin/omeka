@@ -29,6 +29,105 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         $this->view->autocompletes = $autocompletes;
     }
 
+    /**
+     * @url: /admin/gina-admin-mod/admin/autocomplete-add
+     */
+    public function autocompleteAddAction()
+    {
+        $db = get_db();
+        $params = $this->getAllParams();
+        $itemTypes = $db->getTable('ItemType')->findPairsForSelectForm();
+        $elementDbTbl = $db->getTable('Element');
+        $elements = array();
+        foreach ($itemTypes as $itemTypeId => $itemTypeName) {
+            $elemetsTemps = $elementDbTbl->findByItemType($itemTypeId);
+            foreach ($elemetsTemps as $elemetsTemp) {
+                $elements[$itemTypeId][$elemetsTemp->id] = $elemetsTemp->name;
+            }
+        }
+
+        $this->view->elements = json_encode($elements);
+
+        $autocompleteFieldIds = array();
+        if (isset($params['item_type_id']) && isset($params['autocomplete_field_id'])) {
+            $autocompleteFieldIds = $elements[$params['item_type_id']];
+        }
+        $autoFieldIds = array();
+        if (isset($params['item_type_id']) && isset($params['auto_field_id'])) {
+            $autoFieldIds = $elements[$params['item_type_id']];
+        }
+
+        $this->view->form = $this->getAutocompleteEditForm($itemTypes, $autocompleteFieldIds, $autoFieldIds);
+        if ($this->getRequest()->isPost() && $this->view->form->isValid($_POST) && isset($params['autocompletesave'])) {
+            if(
+                !isset($params['item_type_id']) || empty($params['item_type_id']) ||
+                !isset($params['autocomplete_field_id']) || empty($params['autocomplete_field_id']) ||
+                !isset($params['auto_field_id']) || empty($params['auto_field_id']) ||
+                !isset($params['autocomplete_item_type_ids']) || empty($params['autocomplete_item_type_ids'])
+            ) {
+                $this->_helper->flashMessenger('Sie müssen in allen Feldern etwas auswählen', 'error');
+            } else {
+                $insert = new ItemAutocomplete();
+                $insert->item_type_id = (int) $params['item_type_id'];
+                $insert->autocomplete_field_id = (int) $params['autocomplete_field_id'];
+                $insert->autocomplete_field_name = $elements[$params['item_type_id']][$params['autocomplete_field_id']];
+                $insert->auto_field_id = (int) $params['auto_field_id'];
+                $insert->auto_field_name = $elements[$params['item_type_id']][$params['auto_field_id']];
+                $insert->autocomplete_item_type_ids = implode(',', $params['autocomplete_item_type_ids']);
+                $insert->save();
+                $this->_helper->flashMessenger('Autovervollständigen-Feld erfolgreich hinzugefügt', 'success');
+                $this->_helper->redirector('autocomplete-show', 'admin', 'gina-admin-mod');
+            }
+
+        }
+    }
+
+    /**
+     * Get AutocompleteEditForm
+     *
+     * @param array $itemTypes
+     * @param array $autocompleteFieldIds
+     * @param array $autoFieldIds
+     * @return object Omeka Form
+     */
+    protected function getAutocompleteEditForm($itemTypes, $autocompleteFieldIds = array(), $autoFieldIds = array())
+    {
+        $form = new Omeka_Form;
+        $form->setMethod('post');
+        $form->setAttrib('id', 'autocomplete-edit');
+
+        $form->addElement('select', 'item_type_id', array(
+            'label' => 'Objekttyp',
+            'multiOptions' => (array(0 => '') + $itemTypes)
+        ));
+        $form->addElement('select', 'autocomplete_field_id', array(
+            'label' => 'Autovervollständigen-Feld',
+            'multiOptions' => $autocompleteFieldIds
+        ));
+        $form->addElement('select', 'auto_field_id', array(
+            'label' => 'Autovervollständigen-ID-Feld',
+            'multiOptions' => $autoFieldIds
+        ));
+        $form->addElement('multiselect', 'autocomplete_item_type_ids', array(
+            'label' => 'Suche in',
+            'multiOptions' => $itemTypes
+        ));
+        $form->addDisplayGroup(
+            array(
+                'item_type_id', 
+                'autocomplete_field_id', 
+                'auto_field_id',
+                'autocomplete_item_type_ids'
+            ),
+            'autocomplete-definitions',
+            array('legend' => 'Autocomplete Definition')
+        );
+        $form->addElement('submit', 'autocomplete-save', array(
+            'label' => 'Speichern'
+        ));
+        return $form;
+    }
+
     public function sanitizeItemsAction()
     {
         $db = get_db();
