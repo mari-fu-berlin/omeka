@@ -23,15 +23,16 @@
         <tr>
             <td>
                 <span title="<?php echo $autocomplete->item_type_name; ?>"><?php echo $autocomplete->item_type_id; ?></span>
+                - <small><?php echo $autocomplete->item_type_name; ?></small>
             </td>
             <td>
-                <?php echo $autocomplete->autocomplete_field_name; ?>
+                <small><?php echo $autocomplete->autocomplete_field_name; ?></small>
             </td>
             <td>
                 <?php echo $autocomplete->autocomplete_field_id; ?>
             </td>
             <td>
-                <?php echo $autocomplete->auto_field_name; ?>
+                <small><?php echo $autocomplete->auto_field_name; ?></small>
             </td>
             <td>
                 <?php echo $autocomplete->auto_field_id; ?>
