@@ -11,7 +11,7 @@
 
     var pluginName = 'autocompleteSigle',
         defaults = {
-            adminBaseUrl: '/admin',
+            adminBaseUrl: '/omeka/admin',
             warnNoItemFound: 'Kein passendes Objekt gefunden!',
             itemType: 27
         };
@@ -113,7 +113,7 @@
             });
 
             currentInput.catcomplete({
-                source: '/admin/gina-admin-mod/item-autocomplete-complex?type=' + settings.itemType,
+                source: settings.adminBaseUrl + '/gina-admin-mod/item-autocomplete-complex?type=' + settings.itemType,
                 minLength: 1,
                 select: function(event, ui) {
                     settings.selectedAutocompleteFieldValue = ui.item.value;

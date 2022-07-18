@@ -357,15 +357,43 @@ class GinaAdminModPlugin extends Omeka_Plugin_AbstractPlugin
         if (isset($currentValues['autoField']) && !empty($currentValues['autoField'])) {
 
             $sourceItem = $this->_db->getTable('Item')->find($currentValues['autoField']);
-            $sourceItemSigleValue = metadata($sourceItem, array('Item Type Metadata', $sigleField));
-            if (!empty($sourceItemSigleValue) && $sourceItemSigleValue !== $currentValues['autocompleteField']) {
-                // first the soft update
-                $ret = $sourceItemSigleValue;
-                // Now the db update
-                $update['Elements'][$autocomplete->autocomplete_field_id][0]['text'] = $sourceItemSigleValue;
-                $item->beforeSaveElements($update);
-                $item->save();
+            if ($sourceItem) {
+                $sourceItemSigleValue = metadata($sourceItem, array('Item Type Metadata', $sigleField));
+                if (!empty($sourceItemSigleValue) && $sourceItemSigleValue !== $currentValues['autocompleteField']) {
+                    // first the soft update
+                    $ret = $sourceItemSigleValue;
+                    // Now the db update
+                    $update['Elements'][$autocomplete->autocomplete_field_id][0]['text'] = $sourceItemSigleValue;
+                    $item->beforeSaveElements($update);
+                    $item->save();
 
+                }
+            } else {
+                $ret = '';
+                echo '<script>'
+                    . '(function($) {'
+                    . '$("<div />").html("'
+                    . '<p><spam style=\"color:#f30\">Fehler:</spam> Die &quot;Sigle Quelle&quot; konnte der &quot;Sigle Quelle ID&quot; nicht mehr zugeordnet werden!</p>'
+                    . '<p>Bitte geben Sie bei &quot;Sigle Quelle&quot; eine gültige Sigle an!</p>'
+                    . '<p>Der aktuelle Wert ist:<br><code>' . $currentValues['autocompleteField'] . '</code></p>'
+                    . '<p>Sie können bei der &quot;Sigle Quelle&quot; auch nach dem gleichen Wert suchen.</p>'
+                    . '").dialog({'
+                    . ' modal:true,
+                        buttons: [{
+                            text: "OK",
+                            click: function() {
+                                $(this).dialog("close");
+                                $("#Elements-75-0-text").val("' . $currentValues['autocompleteField'] . '").focus().trigger("input");
+                                $([document.documentElement, document.body]).animate({
+                                    scrollTop: $("#element-75").offset().top - 60
+                                }, 1000);
+                            },
+                        }],
+                        open: function() {
+                            $("button", $(this).siblings(".ui-dialog-buttonpane")).focus();
+                        }
+                    });'
+                    . '}(jQuery));</script>';
             }
         }
         return $ret;

@@ -16,7 +16,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
     public function init() {}
 
     public function indexAction() { }
-    
+
     /**
      * @url: /admin/gina-admin-mod/admin/autocomplete-show
      */
@@ -114,8 +114,8 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         ));
         $form->addDisplayGroup(
             array(
-                'item_type_id', 
-                'autocomplete_field_id', 
+                'item_type_id',
+                'autocomplete_field_id',
                 'auto_field_id',
                 'autocomplete_item_type_ids'
             ),
@@ -264,6 +264,192 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
     }
 
     /**
+     * @url: /admin/gina-admin-mod/admin/add-secondary-item-relations
+     */
+    public function addSecondaryItemRelationsAction()
+    {
+        $log = array();
+        $db = get_db();
+        // Get the item relations properties
+        $select = new Omeka_Db_Select($db->getAdapter());
+        $select
+        ->from(
+            array('item_relations_property' => $db->ItemRelationsProperty),
+            array(
+                'label' => 'item_relations_property.label',
+                'property_id' => 'item_relations_property.id'
+            )
+        )
+        ->joinLeft(
+            array('item_relations_vocabulary' => $db->ItemRelationsVocabulary),
+            'item_relations_property.vocabulary_id = item_relations_vocabulary.id',
+            array(
+                'name' => 'item_relations_vocabulary.name',
+            )
+        )
+        ->where('item_relations_vocabulary.name = ?', 'MARI');
+        $relations = $db->fetchAll($select);
+        // var_dump($relations);
+
+        // get item types "Nachricht Textquelle"
+        $select = new Omeka_Db_Select($db->getAdapter());
+        $select
+            ->from(
+                array('item' => $db->Items),
+                array('subject_id' => 'id')
+            )
+            ->joinLeft(
+                array('element_text' => $db->ElementText),
+                'item.id = element_text.record_id',
+                array(
+                    'SO-Ralation sigle' => 'element_text.text',
+                )
+            )
+            ->joinLeft(
+                array('element' => $db->Element),
+                'element_text.element_id = element.id',
+                array(
+                    // 'e_name' => 'element.name',
+                )
+            )
+            ->joinLeft(
+                array('item_types_element' => $db->ItemTypesElement),
+                'element.id = item_types_element.element_id',
+                array()
+            )
+            ->joinLeft(
+                array('item_type' => $db->ItemType),
+                'item_types_element.item_type_id = item_type.id',
+                array(
+                    // 'item_type_name' => 'item_type.name',
+                )
+            )
+            ->where('element_text.record_type = ?', 'Item')
+            ->where('element.name = ?', 'SO-Ralation sigle')
+            ->where('item_type.name = ?', 'Nachricht Textquelle');
+        // $sql = $select->__toString();
+        // var_dump($sql);
+        $items = $db->fetchAll($select);
+        // var_dump($items);
+        if (!$items) {
+            $this->_helper->flashMessenger('Vorgang abgebrochen. Keine Objekte vom Typ "MARI - Nachricht Textquelle" mit "SO-Ralation sigle" Werten vorhanden.', 'error');
+            $this->_helper->redirector('index', 'admin', 'gina-admin-mod');
+        }
+
+        foreach ($items as $itemKey => $item) {
+
+            // SO-Relation initial for each found item
+            $select = new Omeka_Db_Select($db->getAdapter());
+            $select
+                ->from(
+                    array('element_text' => $db->ElementText),
+                    array('SO-Ralation type' => 'text')
+                )
+                ->joinLeft(
+                    array('element' => $db->Element),
+                    'element_text.element_id = element.id',
+                    array(
+                        // 'e_name' => 'element.name',
+                    )
+                )
+                ->where('element_text.record_type = ?', 'Item')
+                ->where('element_text.record_id = ?', $item['subject_id'])
+                ->where('element.name = ?', 'SO-Relation initial');
+
+            // if ($item['SO-Ralation sigle'] == 'Liebermann, Lesendes Mädchen') {
+            //     // var_dump($item, $relationType);
+            //     $sql = $select->__toString();
+            //     var_dump($sql);
+
+            // }
+            $relationType = $db->fetchRow($select);
+
+
+            if ($relationType['SO-Ralation type']) {
+                // check if there is already any relation
+                $select = new Omeka_Db_Select($db->getAdapter());
+                $select
+                    ->from(
+                        array('item_relations' => $db->ItemRelationsRelation),
+                        '*'
+                    )
+                    ->where('subject_item_id = ?', (int) $item['subject_id'])
+                    // ->where('property_id = ?', $relationMariPrimAssignment['property_id'])
+                    // ->where('object_item_id = ?', $sharedObject['object_id'])
+                    ;
+                $relationInDB = $db->fetchRow($select);
+                // var_dump($relationInDB);
+                if ($relationInDB) {
+                    continue;
+                } else {
+                    // get shared object by sigle
+                    $select = new Omeka_Db_Select($db->getAdapter());
+                    $select
+                        ->from(
+                            array('item' => $db->Item),
+                            array(
+                                'id' => 'id',
+                            )
+                        )
+                        ->joinLeft(
+                            array('item_type' => $db->ItemType),
+                            'item.item_type_id = item_type.id',
+                            array()
+                        )
+                        ->joinLeft(
+                            array('element_text' => $db->ElementText),
+                            'item.id = element_text.record_id',
+                            array()
+                        )
+                        ->joinLeft(
+                            array('element' => $db->Element),
+                            'element_text.element_id = element.id',
+                            array()
+                        )
+                        // ->joinLeft(
+                        //     array('item_types_element' => $db->ItemTypesElement),
+                        //     'element.id = item_types_element.element_id',
+                        //     array()
+                        // )
+                        ->where('item_type.name = ?', 'Shared Object')
+                        ->where('element.name = ?', 'Sigle')
+                        ->where('element_text.text = ?', $item['SO-Ralation sigle']);
+
+                    $sharedObject = $db->fetchRow($select);
+                    // var_dump($sharedObject);
+
+                    if(!$sharedObject) {
+                        continue;
+                    } else {
+                        $propId = false;
+                        foreach ($relations as $relation) {
+                            if ($relation['label'] === $relationType['SO-Ralation type']) {
+                                $propId = $relation['property_id'];
+                            }
+                        }
+                        // var_dump($propId);
+                        if (!$propId) {
+                            continue;
+                        } else {
+                            $log[$item['subject_id']] = $this->_insertNewRelation(
+                                $item['subject_id'],
+                                $propId,
+                                $sharedObject['id'],
+                                'Beim Ingest vorgenommene Zuweisung: ' . $relationType['SO-Ralation type']
+                            );
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+        $this->view->log = $log;
+    }
+
+    /**
      * @url: /admin/gina-admin-mod/admin/add-primary-item-relations
      */
     public function addPrimaryItemRelationsAction()
@@ -274,7 +460,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         $select = new Omeka_Db_Select($db->getAdapter());
         $select
         ->from(
-            array('item_relations_property' => $db->ItemRelationsProperty), 
+            array('item_relations_property' => $db->ItemRelationsProperty),
             array(
                 'label' => 'item_relations_property.label',
                 'property_id' => 'item_relations_property.id'
@@ -324,26 +510,26 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         // var_dump($allSharedObjects);
 
         // Get Shared Objects with metadata 'Sigle konstituierende Nachricht ID' set
-        
+
         /**
-         * SELECT `item`.`id` AS `object_id`, 
-         * `element_text`.`text` AS `subject_id` 
-         * FROM `omeka_mari_items` AS `item` 
-         * 
-         * LEFT JOIN `omeka_mari_element_texts` AS `element_text` 
-         * ON item.id = element_text.record_id 
-         * 
-         * LEFT JOIN `omeka_mari_elements` AS `element` 
-         * ON element_text.element_id = element.id 
-         * 
-         * LEFT JOIN `omeka_mari_item_types_elements` AS `item_types_element` 
-         * ON element.id = item_types_element.element_id 
-         * 
-         * LEFT JOIN `omeka_mari_item_types` AS `item_type` 
-         * ON item_types_element.item_type_id = item_type.id 
-         * 
-         * WHERE (element_text.record_type = 'Item') 
-         * AND (element.name = 'Sigle konstituierende Nachricht ID') 
+         * SELECT `item`.`id` AS `object_id`,
+         * `element_text`.`text` AS `subject_id`
+         * FROM `omeka_mari_items` AS `item`
+         *
+         * LEFT JOIN `omeka_mari_element_texts` AS `element_text`
+         * ON item.id = element_text.record_id
+         *
+         * LEFT JOIN `omeka_mari_elements` AS `element`
+         * ON element_text.element_id = element.id
+         *
+         * LEFT JOIN `omeka_mari_item_types_elements` AS `item_types_element`
+         * ON element.id = item_types_element.element_id
+         *
+         * LEFT JOIN `omeka_mari_item_types` AS `item_type`
+         * ON item_types_element.item_type_id = item_type.id
+         *
+         * WHERE (element_text.record_type = 'Item')
+         * AND (element.name = 'Sigle konstituierende Nachricht ID')
          * AND (item_type.name = 'Shared Object')
          */
 
@@ -351,7 +537,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
         $select = new Omeka_Db_Select($db->getAdapter());
         $select
             ->from(
-                array('item' => $db->Items), 
+                array('item' => $db->Items),
                 array('object_id' => 'id')
             )
             ->joinLeft(
@@ -383,7 +569,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
             ->where('element_text.record_type = ?', 'Item')
             ->where('element.name = ?', 'Sigle konstituierende Nachricht ID')
             ->where('item_type.name = ?', 'Shared Object');
-            
+
         // $sql = $select->__toString();
         // var_dump($sql);
         $sharedObjects = $db->fetchAll($select);
@@ -401,7 +587,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
             $select = new Omeka_Db_Select($db->getAdapter());
             $select
                 ->from(
-                    array('item_relations' => $db->ItemRelationsRelation), 
+                    array('item_relations' => $db->ItemRelationsRelation),
                     '*'
                 )
                 ->where('subject_item_id = ?', (int) $sharedObject['subject_id'])
@@ -416,7 +602,7 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
             if ($allSharedObjectsKey !== false) {
                 unset($allSharedObjects[$allSharedObjectsKey]);
             }
-            
+
             if (empty($relations[$sharedObject['object_id']])) {
                 // inssert new relation
                 $log[$sharedObject['object_id']] = $this->_insertNewRelation($sharedObject['subject_id'], $relationMariPrimAssignment['property_id'],  $sharedObject['object_id']);
@@ -450,14 +636,14 @@ class GinaAdminMod_AdminController extends Omeka_Controller_AbstractActionContro
 
     }
 
-    protected function _insertNewRelation($subject_id, $property_id, $object_id) {
+    protected function _insertNewRelation($subject_id, $property_id, $object_id, $annotation = '') {
         $relation = new ItemRelationsRelation();
         $relation->subject_item_id = (int) $subject_id;
         $relation->property_id = (int) $property_id;
         $relation->object_item_id = (int) $object_id;
         $relation->state = 'current';
         $res = $relation->save();
-        $this->_insertNewAnnotation($relation->id);
+        $this->_insertNewAnnotation($relation->id, '', $annotation);
         return $res;
     }
 

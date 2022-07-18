@@ -13,7 +13,8 @@
  */
 class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionController
 {
-    public function init() {}
+    public function init()
+    {}
 
     public function indexAction()
     {
@@ -31,9 +32,9 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             $this->_helper->jsonApi(array(
                 'errors' => array(
                     'status' => '442',
-                    'title'  => 'No item type attribute provided.',
-                    'detail' => 'You must provide a type param in the query.'
-                )
+                    'title' => 'No item type attribute provided.',
+                    'detail' => 'You must provide a type param in the query.',
+                ),
             ));
             return;
         }
@@ -66,7 +67,7 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             foreach ($results as $result) {
                 $autocomplete[] = array(
                     'label' => $result['text'],
-                    'value' => $result['record_id']
+                    'value' => $result['record_id'],
                 );
             }
         }
@@ -82,9 +83,9 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             $this->_helper->jsonApi(array(
                 'errors' => array(
                     'status' => '442',
-                    'title'  => 'No type_id attribute provided.',
-                    'detail' => 'You must provide a type_id in the query.'
-                )
+                    'title' => 'No type_id attribute provided.',
+                    'detail' => 'You must provide a type_id in the query.',
+                ),
             ));
             return;
         }
@@ -98,14 +99,13 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             $item = $db->getTable('Item')->find($item_id);
         }
 
-
         if (!isset($autocompletes) || empty($autocompletes)) {
             $this->_helper->jsonApi(array(
                 'errors' => array(
                     'status' => '442',
-                    'title'  => 'No config for item type_id found.',
-                    'detail' => 'For this item type there is no autocomplete config set.'
-                )
+                    'title' => 'No config for item type_id found.',
+                    'detail' => 'For this item type there is no autocomplete config set.',
+                ),
             ));
             return;
         }
@@ -135,7 +135,7 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
     {
         $ret = array(
             'autocompleteField' => '',
-            'autoField' => ''
+            'autoField' => '',
         );
         if (isset($item) && isset($item->item_type_id)) {
             $ret['autocompleteField'] = metadata($item, array('Item Type Metadata', $autocomplete['autocomplete_field_name']));
@@ -154,9 +154,9 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             $this->_helper->jsonApi(array(
                 'errors' => array(
                     'status' => '442',
-                    'title'  => 'No item type attribute provided.',
-                    'detail' => 'You must provide a type param in the query.'
-                )
+                    'title' => 'No item type attribute provided.',
+                    'detail' => 'You must provide a type param in the query.',
+                ),
             ));
             return;
         }
@@ -202,7 +202,7 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
                     'value' => $result['text'],
                     'item_id' => $result['record_id'],
                     'item_type_id' => $result['item_type_id'],
-                    'category' => $result['name']
+                    'category' => $result['name'],
                 );
             }
         }
@@ -220,7 +220,7 @@ class GinaAdminMod_IndexController extends Omeka_Controller_AbstractActionContro
             $sigle = array(
                 'sigle' => metadata($item, array('Item Type Metadata', 'Sigle')),
                 'id' => $id,
-                'status' => 200
+                'status' => 200,
             );
         }
         // var_dump($item, $sigle);
