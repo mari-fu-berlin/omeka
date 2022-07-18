@@ -23,6 +23,7 @@ $properties = $vocabulary->getProperties();
         <th><?php echo __('Local Part'); ?></th>
         <th><?php echo __('Label'); ?></th>
         <th><?php echo __('Description'); ?></th>
+        <th><?php echo __('Autocomplete IDs'); ?></th>
     </tr>
     </thead>
     <tbody>
@@ -31,6 +32,7 @@ $properties = $vocabulary->getProperties();
         <td><?php echo $vocabulary->custom ? '<span style="color:#ccc;">n/a</span>' : $property->local_part; ?></td>
         <td><?php echo $property->label; ?></td>
         <td><?php echo $property->description; ?></td>
+        <td><?php echo $property->autocpmplete_item_type_ids; ?></td>
     </tr>
 <?php endforeach; ?>
     </tbody>

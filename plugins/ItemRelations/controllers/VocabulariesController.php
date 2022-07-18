@@ -68,15 +68,27 @@ class ItemRelations_VocabulariesController extends Omeka_Controller_AbstractActi
         foreach ($propertyDescriptions as $propertyId => $propertyDescription) {
             $property = $this->_helper->db->getTable('ItemRelationsProperty')->find($propertyId);
             $property->description = $propertyDescription;
+
+            // Edit existing autocpmplete_item_type_ids.
+            $autocpmplete_item_type_ids = $this->_getParam('autocpmplete_item_type_ids');
+            foreach ($autocpmplete_item_type_ids as $id => $val) {
+                if ($propertyId === $id) {
+                    $property->autocpmplete_item_type_ids = $val;
+                    break;
+                }
+            }
+
             $property->save();
         }
-        
+
         // Add new properties.
         $newPropertyLabels = $this->_getParam('new_property_label');
         $newPropertyDescriptions = $this->_getParam('new_property_description');
+        $newPropertyAutocpmpleteItemTypeIdsFields = $this->_getParam('new_property_autocpmplete_item_type_ids');
         foreach ($newPropertyLabels as $key => $newPropertyLabel) {
             $newPropertyLabel = trim($newPropertyLabel);
             $newPropertyDescription = trim($newPropertyDescriptions[$key]);
+            $newPropertyAutocpmpleteItemTypeIdsField = trim($newPropertyAutocpmpleteItemTypeIdsFields[$key]);
             
             // Labels are required.
             if (!$newPropertyLabel) {
@@ -93,6 +105,7 @@ class ItemRelations_VocabulariesController extends Omeka_Controller_AbstractActi
             $newProperty->local_part = ''; // cannot be NULL
             $newProperty->label = $newPropertyLabel;
             $newProperty->description = $newPropertyDescription;
+            $newProperty->new_property_autocpmplete_item_type_ids = $newPropertyAutocpmpleteItemTypeIdsField;
             $newProperty->save();
         }
         

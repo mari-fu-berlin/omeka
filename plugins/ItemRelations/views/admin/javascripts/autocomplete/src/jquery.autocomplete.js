@@ -4,7 +4,7 @@
 
     var pluginName = 'itemrelationsAutocomplete',
         defaults = {
-            adminBaseUrl: '/admin',
+            adminBaseUrl: '/omeka/admin',
             warnNoItemFound: 'Kein passendes Objekt gefunden!',
             itemType: 27
         };
@@ -87,9 +87,9 @@
                         response(searchCache[term]);
                         return;
                     }
-                    $.getJSON('/admin/gina-admin-mod/item-autocomplete-complex?type=' + 
-                        settings.itemType, 
-                        request, 
+                    $.getJSON(settings.adminBaseUrl + '/gina-admin-mod/item-autocomplete-complex?type=' +
+                        settings.itemType,
+                        request,
                         function (data) {
                             searchCache[term] = data;
                             response(data);

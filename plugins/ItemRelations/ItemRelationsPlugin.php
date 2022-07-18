@@ -29,6 +29,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
         'items_batch_edit_custom',
         'public_items_show',
         'items_browse_sql',
+        'define_routes'
     );
 
     /**
@@ -37,6 +38,8 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_filters = array(
         'admin_items_form_tabs',
         'admin_navigation_main',
+        'api_resources',
+        'api_extend_items'
     );
 
     /**
@@ -48,6 +51,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
     );
 
     protected static $_post = null;
+    protected $_elementsCache = [];
 
     /**
      * Install the plugin.
@@ -76,6 +80,7 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             `local_part` varchar(100) NOT NULL,
             `label` varchar(100) DEFAULT NULL,
             `description` text,
+            `autocpmplete_item_type_ids` varchar(255) COLLATE 'utf8_unicode_ci' NULL,
             PRIMARY KEY (`id`)
         ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
         $db->query($sql);
@@ -443,6 +448,18 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
+     * Add the routes from routes.ini in this plugin folder.
+     *
+     * @param array $args Router object in 'router' key
+     */
+    function hookDefineRoutes($args)
+    {
+        $router = $args['router'];
+        $router->addConfig(new Zend_Config_Ini(dirname(__FILE__) .
+            DIRECTORY_SEPARATOR . 'routes.ini', 'routes'));
+    }
+
+    /**
      * Add the Item Relations link to the admin main navigation.
      *
      * @param array Navigation array.
@@ -726,4 +743,205 @@ class ItemRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             self::insertAnnotation($itemRelationId, $user->id, $annotation);
         }
     }
+
+
+    public function filterApiResources($apiResources)
+    {
+        $apiResources['linked_objects'] = array(
+            'record_type' => 'ItemRelations',
+            'actions' => array('get', 'index'),
+            'index_params' => array('object_item_id', 'show_related')
+        );
+        $apiResources['linked_subjects'] = array(
+            'record_type' => 'ItemRelations',
+            'actions' => array('get', 'index'),
+            'index_params' => array('subject_item_id', 'show_related')
+        );
+        return $apiResources;
+    }
+
+    public function filterApiExtendItems($extend, $args)
+    {
+        $item = $args['record'];
+
+        $objectRelationsCount = 0;
+        $apiReltedObjects = array();
+
+        $objectRelations = self::prepareObjectRelations($item);
+        $objectRelationsCount = count($objectRelations);
+
+        // array (size=1)
+        //     0 =>
+        //         array (size=6)
+        //         'item_relation_id' => int 90
+        //         'subject_item_id' => int 928
+        //         'subject_item_title' => string 'Lepke 1934, Winternitz, Trio' (length=28)
+        //         'relation_text' => string 'Primärzuweisung' (length=16)
+        //         'relation_description' => string 'Zuweisung bei Instanziierung eines Shared Object' (length=48)
+        //         'state' => string 'current' (length=7)
+
+        if (isset($objectRelations) && !empty($objectRelations) && isset($objectRelationsCount) && $objectRelationsCount > 0) {
+            foreach ($objectRelations as $relatedObject) {
+                if ($relatedObject['state'] === 'current') {
+                    $representations = array();
+                    $subjectItemType = '';
+                    $files = '';
+                    if (!isset($_GET['public']) || empty($_GET['public']) || $_GET['public'] !== '1') {
+                        $subjectItem = get_db()->getTable('Item')->find($relatedObject['subject_item_id']);
+                        // @see application\libraries\Omeka\Record\Api\AbstractRecordAdapter.php
+                        // and application\models\Api\Item.php
+                        if (is_object($subjectItem)) {
+                            // var_dump($subjectItem->getItemType());
+                            $subjectItemType = $subjectItem->getItemType();
+                            if (isset($subjectItemType) && !empty($subjectItemType) && $subjectItemType['name'] === 'Bilddokument') {
+                                $files = $subjectItem->getFiles();
+                            }
+
+                            foreach ($subjectItem->getAllElementTexts() as $elementText) {
+                                if (!isset($this->_elementsCache[$elementText->element_id])) {
+                                    $element = get_db()->getTable('Element')->find($elementText->element_id);
+                                    if (!$element) {
+                                        continue;
+                                    }
+                                    $this->_elementsCache[$element->id] = array(
+                                        'id' => $element->id,
+                                        'element_set_id' => $element->element_set_id,
+                                        'name' => $element->name,
+                                    );
+                                }
+                                $element = $this->_elementsCache[$elementText->element_id];
+                                $representation = array(
+                                    'html' => (bool) $elementText->html,
+                                    'text' => $elementText->text,
+                                    'element' => array(
+                                        'id' => $elementText->element_id,
+                                        'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/elements/' . $elementText->element_id),
+                                        'name' => $element['name'],
+                                        'resource' => 'elements',
+                                    ),
+                                );
+                                $representations[] = $representation;
+                            }
+                        }
+                    }
+                    $apiReltedObjects[] = array(
+                        'id' => $relatedObject['subject_item_id'],
+                        'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/items/' . $relatedObject['subject_item_id']),
+                        'item_relation_id' => $relatedObject['item_relation_id'],
+                        'subject_item_title' => $relatedObject['subject_item_title'],
+                        'subject_item_type' => $subjectItemType,
+                        'subject_item_files' => $files,
+                        'relation_text' => $relatedObject['relation_text'],
+                        'relation_description' => $relatedObject['relation_description'],
+                        'subject_element_texts' => $representations,
+                        // 'state' => $relatedObject['state']
+                    );
+                }
+            }
+        } else {
+            $objectRelationsCount = 0;
+        }
+
+        // Always display resource in API (otherwhise move inside condition)
+        $extend['linked_objects'] = array(
+            'count' => $objectRelationsCount,
+            'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/item-relations?object_item_id=' . $item->id),
+            'resource' => 'linked_objects',
+            'items' => $apiReltedObjects,
+        );
+
+        $subjectRelationsCount = 0;
+        $apiReltedSubjects = array();
+        $subjectRelations = self::prepareSubjectRelations($item);
+        $subjectRelationsCount = count($subjectRelations);
+
+        // var_dump($subjectRelationsCount);
+
+        // array (size=6)
+        //     'item_relation_id' => int 90
+        //     'object_item_id' => int 830
+        //     'object_item_title' => string 'Winternitz, Trio' (length=16)
+        //     'relation_text' => string 'Primärzuweisung' (length=16)
+        //     'relation_description' => string 'Zuweisung bei Instanziierung eines Shared Object' (length=48)
+        //     'state' => string 'current' (length=7)
+
+        if (isset($subjectRelations) && !empty($subjectRelations) && isset($subjectRelationsCount) && $subjectRelationsCount > 0) {
+            foreach ($subjectRelations as $relatedSubject) {
+
+                // var_dump($relatedSubject);
+
+                if ($relatedSubject['state'] === 'current') {
+                    $objectItem = get_db()->getTable('Item')->find($relatedSubject['object_item_id']);
+                    $representations = array();
+                    $objectItemType = '';
+                    // $files = '';
+                    if (is_object($objectItem)) {
+
+                        $objectItemType = $objectItem->getItemType();
+
+                        // if (isset($objectItemType) && !empty($objectItemType) && $objectItemType['name'] === 'Bilddokument') {
+                        //     $files = $objectItem->getFiles();
+                        // }
+
+
+                        // @see application\libraries\Omeka\Record\Api\AbstractRecordAdapter.php
+                        // and application\models\Api\Item.php
+                        // var_dump($objectItem);
+
+                        foreach ($objectItem->getAllElementTexts() as $elementText) {
+                            if (!isset($this->_elementsCache[$elementText->element_id])) {
+                                $element = get_db()->getTable('Element')->find($elementText->element_id);
+                                if (!$element) {
+                                    continue;
+                                }
+                                $this->_elementsCache[$element->id] = array(
+                                    'id' => $element->id,
+                                    'element_set_id' => $element->element_set_id,
+                                    'name' => $element->name,
+                                );
+                            }
+                            $element = $this->_elementsCache[$elementText->element_id];
+                            $representation = array(
+                                'html' => (bool) $elementText->html,
+                                'text' => $elementText->text,
+                                'element' => array(
+                                    'id' => $elementText->element_id,
+                                    'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/elements/' . $elementText->element_id),
+                                    'name' => $element['name'],
+                                    'resource' => 'elements',
+                                ),
+                            );
+                            $representations[] = $representation;
+                        }
+                        $apiReltedSubjects[] = array(
+                            'id' => $relatedSubject['object_item_id'],
+                            'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/items/' . $relatedSubject['object_item_id']),
+                            'item_relation_id' => $relatedSubject['item_relation_id'],
+                            'object_item_title' => $relatedSubject['object_item_title'],
+                            'object_item_type' => $objectItemType,
+                            // 'object_files' => $files,
+                            'relation_text' => $relatedSubject['relation_text'],
+                            'relation_description' => $relatedSubject['relation_description'],
+                            'object_element_texts' => $representations,
+                            // 'state' => $relatedObject['state']
+                        );
+                    }
+                }
+            }
+        } else {
+            $subjectRelationsCount = 0;
+        }
+
+        // Always display resource in API (otherwhise move inside condition)
+        $extend['linked_subjects'] = array(
+            'count' => $subjectRelationsCount,
+            'url' => Omeka_Record_Api_AbstractRecordAdapter::getResourceUrl('/item-relations?subject_item_id=' . $item->id),
+            'resource' => 'linked_subjects',
+            'items' => $apiReltedSubjects,
+        );
+
+        return $extend;
+
+    }
+
 }

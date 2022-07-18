@@ -39,6 +39,13 @@ class ItemRelationsProperty extends Omeka_Record_AbstractRecord
     public $description;
 
     /**
+     * comma sepparated item_type_ids
+     * for autocomplete search
+     * @var string
+     */
+    public $autocpmplete_item_type_ids;
+
+    /**
      * Get a text representation of the property.
      *
      * The format of the representation is controlled by the
