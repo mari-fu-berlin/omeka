@@ -59,7 +59,10 @@ class Zend_View_Helper_ServerUrl
                 $scheme = 'https';
                 break;
             default:
-            $scheme = 'http';
+            // BEGIN Modification Grandgeorg Websolutions:
+            // -- $scheme = 'http';
+            $scheme = 'https';
+            // END Grandgeorg Websolutions
         }
         $this->setScheme($scheme);
 
